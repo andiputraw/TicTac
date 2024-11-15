@@ -1,45 +1,35 @@
 #include <stdio.h>
 #include "raylib.h"
-
-//------------------------------------------------------------------------------------
-// Program main entry point
-//------------------------------------------------------------------------------------
+#include "screen.h"
+#include "board.h"
 int main(void)
 {
-    // Initialization
-    //--------------------------------------------------------------------------------------
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    Screen s;
+    Board b;
 
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+    Color skyBlue = CLITERAL(Color){ 102, 191, 255, 255 };
+    UpdateScreen(&s, 800, 450);
 
-    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    InitWindow(s.width, s.height, "Tic Tac Toe - TCC");
 
-    // Main game loop
-    while (!WindowShouldClose())    // Detect window close button or ESC key
+    SetTargetFPS(24);
+
+    CreateBoard(&b, BOARD_3_X_3, &s);
+ 
+    while (!WindowShouldClose())    
     {
-        // Update
-        //----------------------------------------------------------------------------------
-        // TODO: Update your variables here
-        //----------------------------------------------------------------------------------
-
-        // Draw
-        //----------------------------------------------------------------------------------
+        UpdateScreen(&s, GetScreenWidth(),GetScreenHeight());
+    
         BeginDrawing();
-
-            ClearBackground(RAYWHITE);
-
-            DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
-
+            ClearBackground(WHITE);
+            DrawBoard(&b);
         EndDrawing();
-        //----------------------------------------------------------------------------------
+       
     }
 
-    // De-Initialization
-    //--------------------------------------------------------------------------------------
-    CloseWindow();        // Close window and OpenGL context
-    //--------------------------------------------------------------------------------------
+   
+    CloseWindow();
 
     return 0;
 }
