@@ -20,7 +20,8 @@ int main(void)
     while (!WindowShouldClose())    
     {
         UpdateScreen(&s, GetScreenWidth(),GetScreenHeight());
-    
+        UpdateBoard(&b);
+        
         BeginDrawing();
             ClearBackground(WHITE);
             DrawBoard(&b);

@@ -1,4 +1,6 @@
 #include "screen.h"
+#include <stdbool.h>
+#include "raylib.h"
 
 #ifndef _BOARD_H
 #define _BOARD_H
@@ -9,17 +11,32 @@
 #define BOARD_5_X_5 4
 
 #define BOX_DRAW_SIZE 45
+#define MAX_BOX_COUNT 42
+
+#define BOX_EMPTY 0 
+#define BOX_X 1
+#define BOX_O 2
+
+typedef struct {
+    Rectangle rec;
+    int value;
+    bool isHover;
+    bool isClicked;
+} Box;
 
 typedef struct {
     int mode;
-    int *val;
+    Box boxes[MAX_BOX_COUNT];
     int board_len;
     Screen *screen;
 } Board;
+
 
 void CreateBoard(Board *b, int mode, Screen *s);
 void DrawBoard(Board *b);
 void UpdateBoard(Board *b);
 void ResetBoard(Board*b);
+void CreateBox(Box *box);
+
 
 #endif // _BOARD_H
