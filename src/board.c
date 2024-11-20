@@ -3,6 +3,8 @@
 #include "board.h"
 #include "raylib.h"
 
+
+
 void CreateBoard(Board *b, int mode, Screen *s){
     b->mode = mode;
     b->screen = s;
@@ -21,7 +23,7 @@ void CreateBoard(Board *b, int mode, Screen *s){
     }
 }
 
-void UpdateBoard(Board *b){
+void UpdateBoard(Board *b, Player p){
     int w = b->screen->width;
     int h = b->screen->height;
     float s = (w * 0.1);
@@ -41,10 +43,15 @@ void UpdateBoard(Board *b){
             b->boxes[index].rec = rec;
             mouse = GetMousePosition(); 
             if (CheckCollisionPointRec(mouse, rec)){
+                UpdateTurn(&p);
                 b->boxes[index].isHover = true;
                 if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
                     if(b->boxes[index].value == BOX_EMPTY){
-                         b->boxes[index].value = BOX_O;
+                        if(p.turn==FIRST_TURN){
+                            b->boxes[index].value = BOX_O;
+                        }else{
+                            b->boxes[index].value = BOX_X;
+                        }
                     }
                     b->boxes[index].isClicked = true;
                 }else {
@@ -71,11 +78,14 @@ void DrawBoard(Board *b){
         }
     
         switch(box.value){
-            case BOX_X: break;
+            case BOX_X: 
+                DrawText("X",box.rec.x + (box.rec.width / 2)-20,box.rec.y + (box.rec.height / 2)-25, 50, BLACK);
+                break;
             case BOX_O:
                 DrawCircle((box.rec.x + (box.rec.width / 2)), (box.rec.y + (box.rec.height / 2)) , box.rec.width / 2, BLACK); 
                 break;
-            case BOX_EMPTY: break;
+            case BOX_EMPTY: 
+                break;
             default:
                 assert("UNREACHABLE" || box.value);
                 break;

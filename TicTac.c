@@ -2,16 +2,21 @@
 #include "raylib.h"
 #include "screen.h"
 #include "board.h"
+#include "player.h"
 int main(void)
 {
     Screen s;
     Board b;
+    Player player;
+  
 
     Color skyBlue = CLITERAL(Color){ 102, 191, 255, 255 };
     UpdateScreen(&s, 800, 450);
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(s.width, s.height, "Tic Tac Toe - TCC");
+
+    player.turn = 0;
 
     SetTargetFPS(24);
 
@@ -20,7 +25,7 @@ int main(void)
     while (!WindowShouldClose())    
     {
         UpdateScreen(&s, GetScreenWidth(),GetScreenHeight());
-        UpdateBoard(&b);
+        UpdateBoard(&b,player);
         
         BeginDrawing();
             ClearBackground(WHITE);

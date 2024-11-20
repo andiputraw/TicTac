@@ -1,4 +1,5 @@
 #include "screen.h"
+#include "player.h"
 #include <stdbool.h>
 #include "raylib.h"
 
@@ -17,6 +18,8 @@
 #define BOX_X 1
 #define BOX_O 2
 
+
+
 typedef struct {
     Rectangle rec;
     int value;
@@ -32,11 +35,13 @@ typedef struct {
 } Board;
 
 
+
 void CreateBoard(Board *b, int mode, Screen *s);
 void DrawBoard(Board *b);
-void UpdateBoard(Board *b);
+void UpdateBoard(Board *b, Player p);
 void ResetBoard(Board*b);
 void CreateBox(Box *box);
+
 
 
 #endif // _BOARD_H
