@@ -1,4 +1,3 @@
-#include "raylib.h"
 #include "player.h"
 
 void UpdateTurn(Player *p){

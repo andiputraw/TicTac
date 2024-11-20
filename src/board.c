@@ -43,7 +43,6 @@ void UpdateBoard(Board *b, Player p){
             b->boxes[index].rec = rec;
             mouse = GetMousePosition(); 
             if (CheckCollisionPointRec(mouse, rec)){
-                UpdateTurn(&p);
                 b->boxes[index].isHover = true;
                 if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
                     if(b->boxes[index].value == BOX_EMPTY){
