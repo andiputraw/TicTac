@@ -1,6 +1,6 @@
+#include <stdbool.h>
 #include "screen.h"
 #include "player.h"
-#include <stdbool.h>
 #include "raylib.h"
 
 #ifndef _BOARD_H
@@ -17,7 +17,6 @@
 #define BOX_EMPTY 0 
 #define BOX_X 1
 #define BOX_O 2
-
 
 
 typedef struct {

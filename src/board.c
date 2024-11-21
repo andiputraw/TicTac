@@ -46,11 +46,7 @@ void UpdateBoard(Board *b, Player p){
                 b->boxes[index].isHover = true;
                 if (IsMouseButtonDown(MOUSE_LEFT_BUTTON)){
                     if(b->boxes[index].value == BOX_EMPTY){
-                        if(p.turn==FIRST_TURN){
-                            b->boxes[index].value = BOX_O;
-                        }else{
-                            b->boxes[index].value = BOX_X;
-                        }
+                        b->boxes[index].value = BOX_O;
                     }
                     b->boxes[index].isClicked = true;
                 }else {
