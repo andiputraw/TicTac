@@ -23,7 +23,7 @@ void CreateBoard(Board *b, int mode, Screen *s){
     }
 }
 
-void UpdateBoard(Board *b, Player p){
+void UpdateBoard(Board *b){
     int w = b->screen->width;
     int h = b->screen->height;
     float s = (w * 0.1);

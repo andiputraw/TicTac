@@ -37,7 +37,7 @@ typedef struct {
 
 void CreateBoard(Board *b, int mode, Screen *s);
 void DrawBoard(Board *b);
-void UpdateBoard(Board *b, Player p);
+void UpdateBoard(Board *b);
 void ResetBoard(Board*b);
 void CreateBox(Box *box);
 

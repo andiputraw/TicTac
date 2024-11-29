@@ -7,7 +7,6 @@ int main(void)
 {
     Screen s;
     Board b;
-    Player player;
   
 
     Color skyBlue = CLITERAL(Color){ 102, 191, 255, 255 };
@@ -15,9 +14,6 @@ int main(void)
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(s.width, s.height, "Tic Tac Toe - TCC");
-
-    player.turn = 0;
-
     SetTargetFPS(24);
 
     CreateBoard(&b, BOARD_3_X_3, &s);
@@ -25,16 +21,15 @@ int main(void)
     while (!WindowShouldClose())    
     {
         UpdateScreen(&s, GetScreenWidth(),GetScreenHeight());
-        UpdateBoard(&b,player);
-        
+        UpdateBoard(&b);
+
         BeginDrawing();
             ClearBackground(WHITE);
+            // MainMenuDraw(s);
             DrawBoard(&b);
         EndDrawing();
        
-    }
-
-   
+    }   
     CloseWindow();
 
     return 0;
