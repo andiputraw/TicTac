@@ -1,24 +1,33 @@
 #ifndef _SCREEN_H
 #define _SCREEN_H
 
-typedef struct {
+typedef struct
+{
   int width;
   int height;
 } Screen;
 
-typedef enum{
-  MAIN_MENU,
-  SELECT_MODES_MENU,
-  GAMEPLAY
-}Scene;
 
 typedef enum{
+  FIRST,
+  SECOND
+} Turn;
+
+typedef enum
+{
+  MAIN_MENU = 0,
+  SELECT_MODES_MENU,
+  GAMEPLAY
+} Scene;
+
+typedef enum
+{
   PLAYING,
   PAUSED,
   ENDED
-}GameState;
+} GameState;
 
-void UpdateScreen(Screen *s, int w, int h );
-// void MainMenuDraw(Screen s);
+void UpdateScreen(Screen *s, int w, int h);
+
 
 #endif // _SCREEN_H
