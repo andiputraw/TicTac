@@ -10,11 +10,16 @@ int main(void)
     Screen s;
     Board b;
     MainMenu mainMenu;
+    ModeSelectMenu modeSelectMenu;
     Color skyBlue = CLITERAL(Color){102, 191, 255, 255};
-    Scene scene = MAIN_MENU;
+    
+    Scene scene = SELECT_MODES_MENU;
+    char p1_container[255] = {0};
+    char p2_container[255] = {0};
 
     UpdateScreen(&s, 800, 450);
     CreateMainMenu(&mainMenu, &s, &scene);
+    CreateModeSelectMenu(&modeSelectMenu, &s, &scene, p1_container, p2_container);
     // printf("HELLO WORLD");
 
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST);
@@ -34,6 +39,8 @@ int main(void)
         else if(scene == MAIN_MENU)
         {
             UpdateMainMenu(&mainMenu);
+        }else if(scene == SELECT_MODES_MENU){
+            UpdateModeSelectMenu(&modeSelectMenu);
         }
 
         BeginDrawing();
@@ -46,6 +53,9 @@ int main(void)
         else if(scene == MAIN_MENU)
         {
             MainMenuDraw(mainMenu);
+        }
+        else if(scene == SELECT_MODES_MENU){
+            ModeSelectMenuDraw(modeSelectMenu);
         }
         
         EndDrawing();

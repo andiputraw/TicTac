@@ -64,8 +64,8 @@ void UpdateInputText(InputText *inputText){
 }
 
 void DrawInputText(InputText *this){
-    int textXPos = this->rect.x + 1;
-    int textYPos = this->rect.y + (this->rect.height / 2);
+    int textXPos = this->rect.x + 20;
+    int textYPos = this->rect.y + (this->rect.height / 4);
     // https://colorhunt.co/palette/a59d84c1baa1d7d3bfecebde
     Color normalColor = (Color){0xEC, 0xEB, 0xDE, 0xFF};
     // D7D3BF
@@ -73,10 +73,11 @@ void DrawInputText(InputText *this){
 
     if(this->isFocus){
         DrawRectangleRec(this->rect, focusColor);
+        DrawRectangleLinesEx(this->rect, 2, BLACK);
     }else {
         DrawRectangleRec(this->rect, normalColor);
     }
-    DrawText(this->value, textXPos, textYPos, 12, BLACK);
+    DrawText(this->value, textXPos, textYPos, 16, BLACK);
 }
 
 
@@ -84,10 +85,20 @@ void __InputKeyToValue(InputText *text){
     // TODO: Hentikan saat value_len 255
     for(int c = 'A'; c < 'Z'; c++) {
         if(IsKeyPressed(c)){
+            // printf("ISINYA %s", text->value);
             text->valueLen += 1;
             text->value[text->valueLen - 1] = c;
         }
-    }    
+    }
+    if(IsKeyPressed(KEY_BACKSPACE)){
+        printf("ISINYA %s", text->value);
+        text->value[text->valueLen - 1] = '\0';
+        text->valueLen -= 1;
+    }
+    if(IsKeyPressed(KEY_SPACE)){
+        text->value[text->valueLen] = ' ';
+        text->valueLen += 1;
+    }
 }
 
 Color __DarkenColor(Color color, float factor) {
