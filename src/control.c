@@ -2,17 +2,29 @@
 #include <raylib.h>
 #include "string.h"
 
-void CreateButton(Button *btn, Rectangle rec, char text[20], Color color, Color textColor, int fontSize){
+ButtonStyle CreateButtonStyle(Color bgColor, Color textColor, Font font, int fontSize){
+    return (ButtonStyle) {
+        .bgColor = bgColor,
+        .textColor = textColor,
+        .fontSize = fontSize,
+        .disabled = false,
+        .font = font,
+    };
+}
+
+void CreateButton(Button *btn, Rectangle rec, char text[20], ButtonStyle style){
     btn->rect = rec;
     strncpy(btn->text, text, 20);
-    btn->color = color;
     btn->isClicked = false;
     btn->isHover = false;
-    btn->fontSize = fontSize;
-    btn->textColor = textColor;
+    btn->style = style;
 }
 
 void UpdateButton(Button *this) {
+    if(this->style.disabled){
+        return;
+    }
+
     Vector2 mousePos = GetMousePosition();
 
     if(CheckCollisionPointRec(mousePos, this->rect)){
@@ -28,27 +40,50 @@ void UpdateButton(Button *this) {
 }
 
 void DrawButton(Button *btn) {
-    int textX = btn->rect.x + ( btn->rect.width/2  - MeasureText(btn->text,btn->fontSize)/2);
-    int textY = btn->rect.y + (btn->rect.height/2 - btn->fontSize/2);
-    Color hoverColor = __DarkenColor(btn->color, 0.2);
+    Vector2 textSize = MeasureTextEx(btn->style.font, btn->text, btn->style.fontSize, 2);
+    // printf("x: %d y: %d\n", textSize.x, textSize.y );
+    int textX = btn->rect.x  + ( btn->rect.width / 2 - textSize.x / 2) ;
+    int textY = btn->rect.y  + (btn->rect.height / 2 - textSize.y / 2) ;
+    Vector2 textPos = (Vector2){textX, textY}; 
+    Color hoverColor = __DarkenColor(btn->style.bgColor, 0.2);
 
     if(btn->isHover){
         DrawRectangleRec(btn->rect, hoverColor);
     }else {
-        DrawRectangleRec(btn->rect, btn->color);
+        DrawRectangleRec(btn->rect, btn->style.bgColor);
     }
-    DrawText(btn->text, textX, textY, btn->fontSize, btn->textColor);
+    DrawTextEx( btn->style.font, btn->text, textPos, btn->style.fontSize,2, btn->style.textColor);
 }
 
-void CreateInputText(InputText *inputText, Rectangle rec, char inputValueContainer[255]){
+InputTextStyle CreateInputTextStyle(Color bgColor, Color textColor, Font font, int fontSize ){
+    InputTextStyle style = (InputTextStyle) {
+        .bgColor = bgColor,
+        .textColor = textColor,
+        .fontSize = fontSize,
+        .disabled = false,
+        .font = font,
+    };
+
+    return style;
+}
+
+void SetInputTextStylePlaceholder(InputTextStyle *style, char placeholder[20]) {
+    strncpy(style->placeholder, placeholder, 20);
+}
+
+void CreateInputText(InputText *inputText, Rectangle rec, char inputValueContainer[255], InputTextStyle style){
     inputText->rect = rec;
     inputText->value = &(inputValueContainer[0]);
     inputText->isFocus = false;
     inputText->valueLen = 0;
+    inputText->style = style;
 }
 
 void UpdateInputText(InputText *inputText){
     Vector2 mousePos = GetMousePosition();
+    if(inputText->style.disabled){
+        return; 
+    }
 
     if(CheckCollisionPointRec(mousePos, inputText->rect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON)){
         inputText->isFocus = true;
@@ -66,24 +101,26 @@ void UpdateInputText(InputText *inputText){
 void DrawInputText(InputText *this){
     int textXPos = this->rect.x + 20;
     int textYPos = this->rect.y + (this->rect.height / 4);
-    // https://colorhunt.co/palette/a59d84c1baa1d7d3bfecebde
-    Color normalColor = (Color){0xEC, 0xEB, 0xDE, 0xFF};
-    // D7D3BF
-    Color focusColor = (Color){0xD7, 0xD3, 0xBF, 0xFF};
+    Vector2 textPos = {textXPos, textYPos};
+    Color focusColor = __DarkenColor(this->style.bgColor, 0.5);
 
     if(this->isFocus){
         DrawRectangleRec(this->rect, focusColor);
         DrawRectangleLinesEx(this->rect, 2, BLACK);
     }else {
-        DrawRectangleRec(this->rect, normalColor);
+        DrawRectangleRec(this->rect, this->style.bgColor);
     }
-    DrawText(this->value, textXPos, textYPos, 16, BLACK);
+    if(this->valueLen == 0){
+        DrawTextEx(this->style.font ,this->style.placeholder, textPos, this->style.fontSize, 2, this->style.textColor);
+    }else {
+        DrawTextEx(this->style.font ,this->value, textPos, this->style.fontSize, 2, this->style.textColor);
+    }
 }
 
 
 void __InputKeyToValue(InputText *text){
     // TODO: Hentikan saat value_len 255
-    for(int c = 'A'; c < 'Z'; c++) {
+    for(int c = 'A'; c <= 'Z'; c++) {
         if(IsKeyPressed(c)){
             // printf("ISINYA %s", text->value);
             text->valueLen += 1;
@@ -91,7 +128,6 @@ void __InputKeyToValue(InputText *text){
         }
     }
     if(IsKeyPressed(KEY_BACKSPACE)){
-        printf("ISINYA %s", text->value);
         text->value[text->valueLen - 1] = '\0';
         text->valueLen -= 1;
     }

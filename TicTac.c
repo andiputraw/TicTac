@@ -12,19 +12,23 @@ int main(void)
     MainMenu mainMenu;
     ModeSelectMenu modeSelectMenu;
     Color skyBlue = CLITERAL(Color){102, 191, 255, 255};
-    
     Scene scene = SELECT_MODES_MENU;
+    Font font;
+
     char p1_container[255] = {0};
     char p2_container[255] = {0};
 
     UpdateScreen(&s, 800, 450);
-    CreateMainMenu(&mainMenu, &s, &scene);
-    CreateModeSelectMenu(&modeSelectMenu, &s, &scene, p1_container, p2_container);
-    // printf("HELLO WORLD");
-
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST);
     InitWindow(s.width, s.height, "Tic Tac Toe - TCC");
+
+    font = LoadFont("assets/fonts/Poppins/Poppins-Regular.ttf");
     SetWindowMinSize(800, 450); 
+
+    CreateMainMenu(&mainMenu, &s, &scene, font);
+    CreateModeSelectMenu(&modeSelectMenu, &s, &scene, p1_container, p2_container, font);
+    // printf("HELLO WORLD");
+
     SetTargetFPS(24);
 
     CreateBoard(&b, BOARD_3_X_3, &s);
@@ -40,6 +44,7 @@ int main(void)
         {
             UpdateMainMenu(&mainMenu);
         }else if(scene == SELECT_MODES_MENU){
+            // printf("WE ARE ON A LOOP");
             UpdateModeSelectMenu(&modeSelectMenu);
         }
 
@@ -60,6 +65,7 @@ int main(void)
         
         EndDrawing();
     }
+    UnloadFont(font);
     CloseWindow();
 
     return 0;

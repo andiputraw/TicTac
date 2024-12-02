@@ -16,7 +16,15 @@ Rectangle __CalculateButtonRect(Screen *screen, int index, int btnWidth, int btn
     };
 }
 
-void CreateMainMenu(MainMenu *mainMenu, Screen *screen, Scene *scene){
+ButtonStyle MainMenuButtonStyle(Font font, int fontSize){
+    return CreateButtonStyle(GRAY, WHITE, font, fontSize);
+}
+
+InputTextStyle MainMenuInputTextStyle(Font font, int fontSize) {
+    return CreateInputTextStyle(GRAY, WHITE, font, fontSize);
+}
+
+void CreateMainMenu(MainMenu *mainMenu, Screen *screen, Scene *scene, Font font){
     int btn_width = screen->width*0.15;
     int btn_height = screen->height*0.1;
     int first_menu_upper_x = screen->width/2 - btn_width/2;
@@ -29,7 +37,7 @@ void CreateMainMenu(MainMenu *mainMenu, Screen *screen, Scene *scene){
     Button *buttons[3] = { &mainMenu->playBtn, &mainMenu->historyBtn, &mainMenu->exitBtn };
 
     for(int i = 0; i < 3; i ++){
-        CreateButton(buttons[i], __CalculateButtonRect(screen, i, btn_width, btn_height, btn_margin_top), playText[i], DARKGRAY, WHITE, menu_font_size);
+        CreateButton(buttons[i], __CalculateButtonRect(screen, i, btn_width, btn_height, btn_margin_top), playText[i], MainMenuButtonStyle( font, menu_font_size));
     }
     *mainMenu = (MainMenu) {.playBtn = *buttons[0], .historyBtn = *buttons[1], .exitBtn = *buttons[2], .screen = screen, .scene = scene};
 }
@@ -59,9 +67,9 @@ void UpdateMainMenu(MainMenu *mainMenu){
     mainMenu->historyBtn.rect = historyRect;
     mainMenu->exitBtn.rect = exitRect;
 
-    mainMenu->playBtn.fontSize = menu_font_size;
-    mainMenu->historyBtn.fontSize = menu_font_size;
-    mainMenu->exitBtn.fontSize = menu_font_size;
+    mainMenu->playBtn.style.fontSize = menu_font_size;
+    mainMenu->historyBtn.style.fontSize = menu_font_size;
+    mainMenu->exitBtn.style.fontSize = menu_font_size;
     
     
     UpdateButton(&mainMenu->historyBtn);
@@ -99,7 +107,7 @@ Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_he
     };
 }
 
-void CreateModeSelectMenu(ModeSelectMenu *menu, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255]){
+void CreateModeSelectMenu(ModeSelectMenu *menu, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font){
     int btn_width = screen->width*0.15;
     int btn_height = screen->height*0.1;
     int btn_margin_right = btn_width * 0.1;
@@ -109,16 +117,32 @@ void CreateModeSelectMenu(ModeSelectMenu *menu, Screen *screen, Scene *scene, ch
     char *btn_text[3] = {"Classic", "Extended", "Pyramid"};
     for(int i = 0; i < 3; i++) {
         rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 3 , 0.8);
-        CreateButton(buttons[i], rec, btn_text[i], GRAY, WHITE, menu_font_size);
+        CreateButton(buttons[i], rec, btn_text[i], MainMenuButtonStyle(font, menu_font_size));
     }
 
     int input_width = screen->width * 0.4;
     int input_height = screen->height * 0.1;
     int input_margin_right = input_width * 0.1;
-    
-    CreateInputText(&menu->InputP1Name, __MeasureRectangleModeSelectMenu(screen, 0, input_height, input_width, input_margin_right, 2, 0.1), input_p1 );
+    InputTextStyle style = MainMenuInputTextStyle(font, menu_font_size) ;
+    SetInputTextStylePlaceholder(&style, "Enter your name..");
+    CreateInputText(&menu->InputP1Name, __MeasureRectangleModeSelectMenu(screen, 0, input_height, input_width, input_margin_right, 2, 0.2), input_p1,  style);
+    CreateInputText(&menu->InputP2Name, __MeasureRectangleModeSelectMenu(screen, 1, input_height, input_width, input_margin_right, 2, 0.2), input_p2, MainMenuInputTextStyle(font, menu_font_size) );
 
-    CreateInputText(&menu->InputP2Name, __MeasureRectangleModeSelectMenu(screen, 1, input_height, input_width, input_margin_right, 2, 0.1), input_p2 );
+    Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
+    char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
+
+    for( int i = 0; i < 2; i++){
+        rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 2, 0.4);
+        CreateButton(vs_btn[i], rec, vs_btn_text[i], MainMenuButtonStyle(font, menu_font_size));
+    }
+
+    Button *diff_btn[3] = {&menu->easyBotBtn, &menu->mediumBotBtn, &menu->hardBotBtn};
+    char *diff_btn_text[3] = {"EASY", "MEDIUM", "HARD"};
+
+    for(int i = 0; i < 3; i++){
+        rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 3, 0.6);
+        CreateButton(diff_btn[i], rec, diff_btn_text[i], MainMenuButtonStyle(font, menu_font_size));
+    }
 
     *menu = (ModeSelectMenu){
         .classicModeBtn = menu->classicModeBtn,
@@ -127,7 +151,11 @@ void CreateModeSelectMenu(ModeSelectMenu *menu, Screen *screen, Scene *scene, ch
         .screen = screen,
         .InputP1Name = menu->InputP1Name,
         .InputP2Name = menu->InputP2Name,
-        // TODO
+        .vsBotBtn = menu->vsBotBtn,
+        .vsPlayerBtn = menu->vsPlayerBtn,
+        .easyBotBtn = menu->easyBotBtn,
+        .mediumBotBtn = menu->mediumBotBtn,
+        .hardBotBtn = menu->hardBotBtn,
     };
 
 }
@@ -143,7 +171,7 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     for(int i = 0; i < 3; i++) {
         rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width, btn_margin_right, 3 , 0.8);
         buttons[i]->rect = rec;
-        buttons[i]->fontSize = menu_font_size;
+        buttons[i]->style.fontSize = menu_font_size;
         UpdateButton(buttons[i]);
     }
 
@@ -152,13 +180,31 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     int input_height = menu->screen->height * 0.1;
     int input_margin_right = input_width * 0.1;
     
-    menu->InputP1Name.rect = __MeasureRectangleModeSelectMenu(menu->screen, 0, input_height, input_width, input_margin_right, 2, 0.1);
-
-    menu->InputP2Name.rect = __MeasureRectangleModeSelectMenu(menu->screen, 1, input_height, input_width, input_margin_right, 2, 0.1);
-    
-
+    menu->InputP1Name.rect = __MeasureRectangleModeSelectMenu(menu->screen, 0, input_height, input_width, input_margin_right, 2, 0.2);
+    menu->InputP2Name.rect = __MeasureRectangleModeSelectMenu(menu->screen, 1, input_height, input_width, input_margin_right, 2, 0.2);
+    menu->InputP1Name.style.fontSize = menu_font_size;
+    menu->InputP2Name.style.fontSize = menu_font_size;
     UpdateInputText(&menu->InputP1Name);
     UpdateInputText(&menu->InputP2Name);
+    
+    Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
+    char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
+
+    for( int i = 0; i < 2; i++){
+        rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width + 30, btn_margin_right, 2, 0.4);
+        vs_btn[i]->rect = rec;
+        vs_btn[i]->style.fontSize = menu_font_size;
+        UpdateButton(vs_btn[i]);    
+    }
+
+    Button *diff_btn[3] = {&menu->easyBotBtn, &menu->mediumBotBtn, &menu->hardBotBtn};
+
+    for(int i = 0; i < 3; i++){
+        rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width, btn_margin_right, 3, 0.6);
+        diff_btn[i]->rect = rec;
+        diff_btn[i]->style.fontSize = menu_font_size;
+        UpdateButton(diff_btn[i]);
+    }
 
 }
 
@@ -169,4 +215,11 @@ void ModeSelectMenuDraw(ModeSelectMenu selectMenu){
 
     DrawInputText(&selectMenu.InputP1Name);
     DrawInputText(&selectMenu.InputP2Name);
+
+    DrawButton(&selectMenu.vsPlayerBtn);
+    DrawButton(&selectMenu.vsBotBtn);
+
+    DrawButton(&selectMenu.easyBotBtn);
+    DrawButton(&selectMenu.mediumBotBtn);
+    DrawButton(&selectMenu.hardBotBtn);
 }
