@@ -49,6 +49,7 @@ void DrawButton(Button *btn) {
 
     if(btn->isHover){
         DrawRectangleRec(btn->rect, hoverColor);
+    
     }else {
         DrawRectangleRec(btn->rect, btn->style.bgColor);
     }

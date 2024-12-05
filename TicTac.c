@@ -33,6 +33,7 @@ int main(void)
 
     CreateBoard(&b, BOARD_3_X_3, &s);
     b.turn = FIRST;
+    scene = MAIN_MENU;
     while (!WindowShouldClose())
     {
         UpdateScreen(&s, GetScreenWidth(), GetScreenHeight());

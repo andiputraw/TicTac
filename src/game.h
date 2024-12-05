@@ -1,6 +1,8 @@
 #ifndef _SCREEN_H
 #define _SCREEN_H
 
+#include "player.h"
+
 typedef struct
 {
   int width;
@@ -22,10 +24,24 @@ typedef enum
 
 typedef enum
 {
-  PLAYING,
+  PLAYING = 0,
   PAUSED,
   ENDED
+} GameStatus;
+
+typedef enum{
+  VSBOT = 0,
+  VSPLAYER
+} VsMode;
+
+typedef struct{
+  Scene scene;
+  GameStatus gameStatus;
+  VsMode vsMode;
+  Player *p1;
+  Player *p2;
 } GameState;
+
 
 void UpdateScreen(Screen *s, int w, int h);
 

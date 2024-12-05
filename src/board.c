@@ -166,14 +166,16 @@ bool __IsWin(Board *b, int index)
     if (b->mode == BOARD_3_X_3)
     {
         __1DTo2D(index, 3, &row, &col);
+        // Horizontal
         if (
             b->boxes[__2Dto1D(3, row, 0)].value == currVal &&
             b->boxes[__2Dto1D(3, row, 1)].value == currVal &&
             b->boxes[__2Dto1D(3, row, 2)].value == currVal)
         {
+
             return true;
         }
-
+        // Vertical
         if (
             b->boxes[__2Dto1D(3, 0, col)].value == currVal &&
             b->boxes[__2Dto1D(3, 1, col)].value == currVal &&
@@ -181,7 +183,7 @@ bool __IsWin(Board *b, int index)
         {
             return true;
         }
-
+        // Diagonal
         if ((col == 0 && row == 0) || (col == 2 && row == 2) || (col == 1 && row == 1))
         {
             if (
@@ -189,6 +191,7 @@ bool __IsWin(Board *b, int index)
                 b->boxes[__2Dto1D(3,1,1)].value == currVal &&
                 b->boxes[__2Dto1D(3,2,2)].value == currVal)
             {
+    
                 return true;
             }
         }
@@ -226,3 +229,10 @@ bool __IsWin(Board *b, int index)
     }
 
 }
+
+DrawScoreLine(Board *b, int row, int col){
+    Vector2 startPos = (Vector2) {.x = b->boxes[__2Dto1D(3, row, 0)].rec.x + (b->boxes[__2Dto1D(3, row, 0)].rec.width/2) , .y=b->boxes[__2Dto1D(3, row, 0)].rec.y};
+    Vector2 endPos = (Vector2) {.x = b->boxes[__2Dto1D(3, row, 2)].rec.x + (b->boxes[__2Dto1D(3, row, 0)].rec.width/2) , .y=b->boxes[__2Dto1D(3, row, 2)].rec.y};
+    DrawLineEx(startPos,endPos, 4.0f, BLACK);
+}
+

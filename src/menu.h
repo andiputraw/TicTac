@@ -26,6 +26,9 @@ typedef struct
     Button mediumBotBtn;
     Button hardBotBtn;
     Screen *screen;
+    Scene *scene;
+    GameState *gameState;
+    VsMode *vsMode;
 } ModeSelectMenu;
 
 void CreateMainMenu(MainMenu *mainmenu, Screen *screen, Scene *scene, Font font);

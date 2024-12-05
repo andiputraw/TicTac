@@ -77,7 +77,7 @@ void UpdateMainMenu(MainMenu *mainMenu){
     UpdateButton(&mainMenu->playBtn);
 
     if(mainMenu->playBtn.isClicked){
-        *mainMenu->scene = GAMEPLAY;
+        *mainMenu->scene = SELECT_MODES_MENU;
     }
 }
 
@@ -128,6 +128,7 @@ void CreateModeSelectMenu(ModeSelectMenu *menu, Screen *screen, Scene *scene, ch
     CreateInputText(&menu->InputP1Name, __MeasureRectangleModeSelectMenu(screen, 0, input_height, input_width, input_margin_right, 2, 0.2), input_p1,  style);
     CreateInputText(&menu->InputP2Name, __MeasureRectangleModeSelectMenu(screen, 1, input_height, input_width, input_margin_right, 2, 0.2), input_p2, MainMenuInputTextStyle(font, menu_font_size) );
 
+
     Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
     char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
 
@@ -156,6 +157,7 @@ void CreateModeSelectMenu(ModeSelectMenu *menu, Screen *screen, Scene *scene, ch
         .easyBotBtn = menu->easyBotBtn,
         .mediumBotBtn = menu->mediumBotBtn,
         .hardBotBtn = menu->hardBotBtn,
+        .scene = scene,
     };
 
 }
@@ -173,6 +175,10 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
         buttons[i]->rect = rec;
         buttons[i]->style.fontSize = menu_font_size;
         UpdateButton(buttons[i]);
+        if(buttons[i]->isClicked){
+            printf("button click");
+            *menu->scene = GAMEPLAY;
+        }
     }
 
 
@@ -184,6 +190,7 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     menu->InputP2Name.rect = __MeasureRectangleModeSelectMenu(menu->screen, 1, input_height, input_width, input_margin_right, 2, 0.2);
     menu->InputP1Name.style.fontSize = menu_font_size;
     menu->InputP2Name.style.fontSize = menu_font_size;
+    
     UpdateInputText(&menu->InputP1Name);
     UpdateInputText(&menu->InputP2Name);
     
@@ -205,7 +212,6 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
         diff_btn[i]->style.fontSize = menu_font_size;
         UpdateButton(diff_btn[i]);
     }
-
 }
 
 void ModeSelectMenuDraw(ModeSelectMenu selectMenu){
