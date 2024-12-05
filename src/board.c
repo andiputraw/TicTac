@@ -4,10 +4,13 @@
 #include "raylib.h"
 #include <stdio.h>
 
-void CreateBoard(Board *b, int mode, Screen *s)
+void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s, Font font)
 {
     b->mode = mode;
     b->screen = s;
+    b->gameState = gameState;
+    b->font = font;
+
     for (int i = 0; i < MAX_BOX_COUNT; i++)
     {
         CreateBox(&b->boxes[i]);
@@ -39,13 +42,14 @@ void UpdateBoard(Board *b)
     Rectangle rec;
     Vector2 mouse;
     int i = 0, j = 0;
+
     int index;
     for (i = 0; i < 3; i++)
     {
         for (j = 0; j < 3; j++)
         {
             rec = (Rectangle){left_upper_square_x + (i * s) + (offset * i), left_upper_square_y + (j * s) + (offset * j), s, s};
-            index = (i * 3) + j;
+            index = (j * 3) + i;
             b->boxes[index].rec = rec;
             mouse = GetMousePosition();
             if (CheckCollisionPointRec(mouse, rec))
@@ -53,6 +57,7 @@ void UpdateBoard(Board *b)
                 b->boxes[index].isHover = true;
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
+                    printf("%d", index);
                     if (b->boxes[index].value == BOX_EMPTY)
                     {
                         if (b->turn == FIRST)
@@ -67,7 +72,7 @@ void UpdateBoard(Board *b)
                         }
                         if (__IsWin(b, index))
                         {
-                            printf("Pemain %d Menang\n", b->turn);
+                            SetScoreLine(b,index);
                         }
                     }
                     b->boxes[index].isClicked = true;
@@ -82,6 +87,9 @@ void UpdateBoard(Board *b)
                 b->boxes[index].isHover = false;
             }
         }
+    }
+    if(IsKeyPressed(KEY_R)){
+        ResetBoard(b);
     }
 }
 
@@ -129,6 +137,14 @@ void DrawBoard(Board *b)
             break;
         }
     }
+    if(__IsWin(b,i)){
+        DrawLineEx(b->scoreLinePos.startPos, b->scoreLinePos.endPos, 8.0f,BLACK);
+    }
+    if(b->turn == FIRST){
+        DrawTextEx(b->font,TextFormat("%s's Turn",b->gameState->p1.name),(Vector2){10,10},25,1, BLACK);
+    }else if(b->turn == SECOND){
+        DrawTextEx(b->font,TextFormat("%s's Turn",b->gameState->p2.name), (Vector2) {10,10},25,1,BLACK);
+    }
 }
 
 void CreateBox(Box *box)
@@ -172,7 +188,7 @@ bool __IsWin(Board *b, int index)
             b->boxes[__2Dto1D(3, row, 1)].value == currVal &&
             b->boxes[__2Dto1D(3, row, 2)].value == currVal)
         {
-
+            b->winCondition = HORIZONTAL;
             return true;
         }
         // Vertical
@@ -181,9 +197,10 @@ bool __IsWin(Board *b, int index)
             b->boxes[__2Dto1D(3, 1, col)].value == currVal &&
             b->boxes[__2Dto1D(3, 2, col)].value == currVal)
         {
+            b->winCondition = VERTICAL;
             return true;
         }
-        // Diagonal
+        // Diagonal top left
         if ((col == 0 && row == 0) || (col == 2 && row == 2) || (col == 1 && row == 1))
         {
             if (
@@ -191,11 +208,11 @@ bool __IsWin(Board *b, int index)
                 b->boxes[__2Dto1D(3,1,1)].value == currVal &&
                 b->boxes[__2Dto1D(3,2,2)].value == currVal)
             {
-    
+                b->winCondition = DIAGONAL_TOP_LEFT;
                 return true;
             }
         }
-
+        //Diagonal top right
         if ((col == 2 && row == 0) || (col == 0 && row == 2) || (col == 1 && row == 1))
         {
             if (
@@ -203,6 +220,7 @@ bool __IsWin(Board *b, int index)
                 b->boxes[__2Dto1D(3, 1,1)].value == currVal &&
                 b->boxes[__2Dto1D(3, 2,0)].value == currVal)
             {
+                b->winCondition = DIAGONAL_TOP_RIGHT;
                 return true;
             }
         }
@@ -230,9 +248,30 @@ bool __IsWin(Board *b, int index)
 
 }
 
-DrawScoreLine(Board *b, int row, int col){
-    Vector2 startPos = (Vector2) {.x = b->boxes[__2Dto1D(3, row, 0)].rec.x + (b->boxes[__2Dto1D(3, row, 0)].rec.width/2) , .y=b->boxes[__2Dto1D(3, row, 0)].rec.y};
-    Vector2 endPos = (Vector2) {.x = b->boxes[__2Dto1D(3, row, 2)].rec.x + (b->boxes[__2Dto1D(3, row, 0)].rec.width/2) , .y=b->boxes[__2Dto1D(3, row, 2)].rec.y};
-    DrawLineEx(startPos,endPos, 4.0f, BLACK);
+void SetScoreLine(Board *b, int index){
+    int row,col;
+    __1DTo2D(index,3, &row, &col);
+    if(b->winCondition == VERTICAL){
+    b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, 0, col)].rec.x + b->boxes[__2Dto1D(3, 0, col)].rec.width/2,.y= b->boxes[__2Dto1D(3, 0, col)].rec.y};
+    b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, 2, col)].rec.x + b->boxes[__2Dto1D(3, 0, col)].rec.width/2,.y= b->boxes[__2Dto1D(3, 2, col)].rec.y + b->boxes[__2Dto1D(3, 2, col)].rec.height};
+    }else if(b->winCondition == HORIZONTAL){
+        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, row, 0)].rec.x, .y = b->boxes[__2Dto1D(3, row, 0)].rec.y+b->boxes[__2Dto1D(3, row, 0)].rec.height/2};
+        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, row, 2)].rec.x +  b->boxes[__2Dto1D(3, row, 2)].rec.width, .y = b->boxes[__2Dto1D(3, row, 2)].rec.y+b->boxes[__2Dto1D(3, row, 0)].rec.height/2};
+    }else if(b->winCondition == DIAGONAL_TOP_LEFT){
+        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, 0, 0)].rec.x, .y=b->boxes[__2Dto1D(3, 0, 0)].rec.y};
+        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, 2, 2)].rec.x + b->boxes[__2Dto1D(3, 2, 2)].rec.width, .y = b->boxes[__2Dto1D(3, 2, 2)].rec.y +  b->boxes[__2Dto1D(3, 2, 2)].rec.width };
+    }else if(b->winCondition == DIAGONAL_TOP_RIGHT){
+        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, 0, 2)].rec.x+b->boxes[__2Dto1D(3, 0, 2)].rec.width, .y=b->boxes[__2Dto1D(3, 0, 2)].rec.y};
+        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, 2, 0)].rec.x, .y = b->boxes[__2Dto1D(3, 2, 2)].rec.y + b->boxes[__2Dto1D(3, 2, 2)].rec.height };
+
+    }
 }
 
+void ResetBoard(Board *b){
+    for(int i = 0; i < 9; i++){
+         b->boxes[i].value = BOX_EMPTY;
+    }
+    b->scoreLinePos.startPos = (Vector2) {0,0};
+    b->scoreLinePos.endPos = (Vector2) {0,0};
+    b->turn = FIRST;
+}

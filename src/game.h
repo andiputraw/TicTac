@@ -34,12 +34,20 @@ typedef enum{
   VSPLAYER
 } VsMode;
 
+typedef enum{
+  HORIZONTAL,
+  VERTICAL,
+  DIAGONAL_TOP_LEFT,
+  DIAGONAL_TOP_RIGHT,
+} WinCondition;
+
 typedef struct{
   Scene scene;
   GameStatus gameStatus;
   VsMode vsMode;
-  Player *p1;
-  Player *p2;
+  Player p1;
+  Player p2;
+
 } GameState;
 
 

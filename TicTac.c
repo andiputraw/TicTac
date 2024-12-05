@@ -12,8 +12,9 @@ int main(void)
     MainMenu mainMenu;
     ModeSelectMenu modeSelectMenu;
     Color skyBlue = CLITERAL(Color){102, 191, 255, 255};
-    Scene scene = SELECT_MODES_MENU;
+    Scene scene = MAIN_MENU;
     Font font;
+    GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSPLAYER};
 
     char p1_container[255] = {0};
     char p2_container[255] = {0};
@@ -26,12 +27,12 @@ int main(void)
     SetWindowMinSize(800, 450); 
 
     CreateMainMenu(&mainMenu, &s, &scene, font);
-    CreateModeSelectMenu(&modeSelectMenu, &s, &scene, p1_container, p2_container, font);
+    CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene, p1_container, p2_container, font);
     // printf("HELLO WORLD");
 
     SetTargetFPS(24);
 
-    CreateBoard(&b, BOARD_3_X_3, &s);
+    CreateBoard(&b,&gameState, BOARD_3_X_3, &s, font);
     b.turn = FIRST;
     scene = MAIN_MENU;
     while (!WindowShouldClose())
@@ -39,6 +40,7 @@ int main(void)
         UpdateScreen(&s, GetScreenWidth(), GetScreenHeight());
         if (scene == GAMEPLAY)
         {
+
             UpdateBoard(&b);
         }
         else if(scene == MAIN_MENU)
