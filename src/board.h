@@ -25,21 +25,31 @@ typedef struct {
     bool isClicked;
 } Box;
 
+typedef struct{
+    Vector2 startPos;
+    Vector2 endPos;
+} ScoreLinePos;
+
 typedef struct {
     int mode;
     Box boxes[MAX_BOX_COUNT];
     int board_len;
     Screen *screen;
     Turn turn;
+    GameState *gameState;
+    ScoreLinePos scoreLinePos;
+    WinCondition winCondition;
+    Font font;
 } Board;
 
 
 
-void CreateBoard(Board *b, int mode, Screen *s);
+void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s, Font font);
 void DrawBoard(Board *b);
 void UpdateBoard(Board *b);
 void ResetBoard(Board*b);
 void CreateBox(Box *box);
+void SetScoreLine(Board *b,int index);
 
 
 int __2Dto1D(int maxCol, int row, int col);

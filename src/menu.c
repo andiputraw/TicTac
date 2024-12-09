@@ -107,7 +107,7 @@ Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_he
     };
 }
 
-void CreateModeSelectMenu(ModeSelectMenu *menu, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font){
+void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font){
     int btn_width = screen->width*0.15;
     int btn_height = screen->height*0.1;
     int btn_margin_right = btn_width * 0.1;
@@ -158,6 +158,7 @@ void CreateModeSelectMenu(ModeSelectMenu *menu, Screen *screen, Scene *scene, ch
         .mediumBotBtn = menu->mediumBotBtn,
         .hardBotBtn = menu->hardBotBtn,
         .scene = scene,
+        .gameState= gameState
     };
 
 }
@@ -176,7 +177,6 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
         buttons[i]->style.fontSize = menu_font_size;
         UpdateButton(buttons[i]);
         if(buttons[i]->isClicked){
-            printf("button click");
             *menu->scene = GAMEPLAY;
         }
     }
@@ -193,7 +193,13 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     
     UpdateInputText(&menu->InputP1Name);
     UpdateInputText(&menu->InputP2Name);
+
+    for(int i = 0; i<20; i++){
+        menu->gameState->p1.name[i] = menu->InputP1Name.value[i];
+        menu->gameState->p2.name[i] = menu->InputP2Name.value[i];
+    }
     
+
     Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
     char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
 
