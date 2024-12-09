@@ -2,6 +2,9 @@
 #define CONTROL_H
 
 #include "raylib.h"
+
+#define NO_RECT (Rectangle){0,0,0,0}
+
 typedef struct {
   Color bgColor;
   Color textColor;
@@ -46,7 +49,7 @@ void CreateInputText(InputText *this, Rectangle rec, char inputValueContainer[25
 void UpdateInputText(InputText *this);
 void DrawInputText(InputText *this);
 
-// Private Function: 
+// Private Function:
 // Cek input dari keyboard, lalu masukan ke value
 void __InputKeyToValue(InputText *text);
 // Membuat color yang diberikan lebih gelap

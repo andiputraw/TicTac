@@ -17,10 +17,10 @@ void __PrintHistory(History h){
 
     printf("P1 Name : %s\n", h.p1.name);
     printf("P1 Score:%d\n", h.p1.score);
-    
+
     printf("P2 Name : %s\n", h.p2.name);
     printf("P2 Score:%d\n", h.p2.score);
-    
+
     printf("Board State\n");
     for(int i = 0; i < 25; i++){
         printf("%d ", h.BoardState[i]);
@@ -36,22 +36,22 @@ int HistoryToBuffer(char *buffer, History h){
     buffer[i++] = h.game_mode;
     buffer[i++] = (char)h.p1.score;
     buffer[i++] = (char)h.p2.score;
-    
+
     // cari panjang nama p1 dan taruh di buffer
-    p1_len = strlen(h.p1.name); 
+    p1_len = strlen(h.p1.name);
     buffer[i++] = (char) p1_len;
     // loop sebanyak panjang nama p1, dan taruh setiap karakter ke buffer
     for(j = 0; j < p1_len; j++){
-        buffer[i++] = h.p1.name[j]; 
+        buffer[i++] = h.p1.name[j];
     }
-    
+
     // cari panjang nama p2 dan taruh di buffer
     p2_len = strlen(h.p2.name);
     buffer[i++] = (char) p2_len;
 
     // loop sebanyak panjang nama p2, dan taruh setiap karakter ke buffer
     for(j = 0; j < p2_len; j++){
-        buffer[i++] = h.p2.name[j]; 
+        buffer[i++] = h.p2.name[j];
     }
     // taruh state board state ke buffer
     for(j = 0; j < 25; j++){
@@ -64,11 +64,11 @@ int HistoryToBuffer(char *buffer, History h){
 int BufferToHistory(char *buffer, History *h){
     int i = 0, p1_len = 0, p2_len = 0;
     int j = 0;
-    // parsing buffer dan taruh ke game_mode dan skor masing masing 
+    // parsing buffer dan taruh ke game_mode dan skor masing masing
     h->game_mode = buffer[i++];
     h->p1.score = (int)buffer[i++];
     h->p2.score = (int)buffer[i++];
-    
+
     // ambil panjang yang ada di buffer
     p1_len = (int)buffer[i++];
 
@@ -85,7 +85,7 @@ int BufferToHistory(char *buffer, History *h){
     for(j = 0; j < p2_len; j++){
         h->p2.name[j] = buffer[i++];
     }
-    // null terminator 
+    // null terminator
     h->p2.name[j] = '\0';
 
     // copy board state (sisanya) di buffer
@@ -117,7 +117,7 @@ void RefreshLeaderboardBuffer(Leaderboard *l){
         return;
     }
     fgets(l->history_buffer, TWO_MB, l->history);
-    
+
     if (fseek(l->leaderboard, 0 ,SEEK_SET) != 0){
         perror("Failed seeking to start of file");
         return;
@@ -131,13 +131,21 @@ void CloseLeaderboard(Leaderboard *l) {
 }
 
 void WriteHistory(Leaderboard *l, History *h){
-    // fseek(l->)
+    char alloc[1024];
+    int count = 0;
+    if (fseek(l->history, 0, SEEK_END) != 0){
+        perror("Failed seeking to end of file");
+        return;
+    }
+
+    count = HistoryToBuffer(&alloc, *h);
+    fwrite(alloc, sizeof(char), count, l->history);
 }
 
 void TestHistory(){
     printf("TEST HISTORY SERIALIZING\n");
     // TEST LEADERBOARD
-    int boxes[25] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+    int boxes[25] = {0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
     Player p1 = (Player){
         .name= "andiputraw",
         .score = 5,
@@ -154,7 +162,7 @@ void TestHistory(){
         .game_mode = BOARD_3_X_3
     };
     memcpy(h.BoardState, boxes, sizeof(int) * 25);
-    
+
     char buffer[255];
     int len = HistoryToBuffer(buffer, h);
     __PrintBuffer(buffer, len);
@@ -162,8 +170,10 @@ void TestHistory(){
     BufferToHistory(buffer,&parsed_h);
     __PrintHistory(parsed_h);
 
-    printf("TEST FILE LEADERBOARD\n");
+    printf("\nTEST FILE LEADERBOARD\n");
     Leaderboard l;
     OpenLeaderboard(&l);
+    WriteHistory(&l, &h);
     CloseLeaderboard(&l);
+    printf("TEST HISTORY SERIALIZING COMPLETED\n");
 }
