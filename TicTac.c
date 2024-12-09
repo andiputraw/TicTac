@@ -4,6 +4,19 @@
 #include "board.h"
 #include "player.h"
 #include "menu.h"
+#include "leaderboard.h"
+
+#define TEST 0;
+
+#if TEST == 1
+
+void test_case(){
+    printf("EXECUTING HISTORY TEST CASE\n");
+    __TestHistory__();
+    printf("HISTORY TEST CASE COMPLETED\n");
+}
+
+#endif // TEST
 
 int main(void)
 {
@@ -17,6 +30,13 @@ int main(void)
 
     char p1_container[255] = {0};
     char p2_container[255] = {0};
+
+    #if TEST == 1
+
+    printf("EXECUTING TEST CASE...\n");
+    test_case();
+    return 0;
+    #endif // TEST
 
     UpdateScreen(&s, 800, 450);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST);
