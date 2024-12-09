@@ -6,13 +6,14 @@
 #include "menu.h"
 #include "leaderboard.h"
 
-#define TEST 0;
+#define TEST
 
-#if TEST == 1
+#ifdef TEST
 
 void test_case(){
     printf("EXECUTING HISTORY TEST CASE\n");
-    __TestHistory__();
+    printf("for whatever reason, test history is not executed\n");
+    TestHistory();
     printf("HISTORY TEST CASE COMPLETED\n");
 }
 
@@ -32,8 +33,7 @@ int main(void)
     char p1_container[255] = {0};
     char p2_container[255] = {0};
 
-    #if TEST == 1
-
+    #ifdef TEST
     printf("EXECUTING TEST CASE...\n");
     test_case();
     return 0;
@@ -67,7 +67,6 @@ int main(void)
         {
             UpdateMainMenu(&mainMenu);
         }else if(scene == SELECT_MODES_MENU){
-            // printf("WE ARE ON A LOOP");
             UpdateModeSelectMenu(&modeSelectMenu);
         }
 

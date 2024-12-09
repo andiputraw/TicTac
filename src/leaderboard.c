@@ -30,6 +30,7 @@ void __PrintHistory(History h){
 int HistoryToBuffer(char *buffer, History h){
     int i, p1_len, p2_len = 0;
     int j = 0;
+    i = 0;
 
     // Taruh game mode, skor p1 dan p2 ke buffer
     buffer[i++] = h.game_mode;
@@ -110,12 +111,30 @@ void OpenLeaderboard(Leaderboard *l){
     fgets(l->leaderboard_buffer, TWO_MB, l->leaderboard);
 }
 
+void RefreshLeaderboardBuffer(Leaderboard *l){
+    if (fseek(l->history, 0 ,SEEK_SET) != 0){
+        perror("Failed seeking to start of file");
+        return;
+    }
+    fgets(l->history_buffer, TWO_MB, l->history);
+    
+    if (fseek(l->leaderboard, 0 ,SEEK_SET) != 0){
+        perror("Failed seeking to start of file");
+        return;
+    }
+    fgets(l->leaderboard_buffer, TWO_MB, l->leaderboard);
+}
+
 void CloseLeaderboard(Leaderboard *l) {
     fclose(l->history);
     fclose(l->leaderboard);
 }
 
-void __TestHistory__(){
+void WriteHistory(Leaderboard *l, History *h){
+    // fseek(l->)
+}
+
+void TestHistory(){
     printf("TEST HISTORY SERIALIZING\n");
     // TEST LEADERBOARD
     int boxes[25] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};

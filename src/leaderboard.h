@@ -20,10 +20,6 @@ typedef struct {
     char history_buffer[TWO_MB];
 } Leaderboard;
 
-void OpenLeaderboard(Leaderboard *l);
-
-void CloseLeaderboard(Leaderboard *l);
-
 /**
  * History Spec
  * Value ditaruh dalam bentuk unsigned char
@@ -48,10 +44,21 @@ typedef struct {
     int BoardState[25];
 } History;
 
+
+// Membuka file yang dibutuhkan untuk leaderboard dan history. Prosedur ini harus dieksekusi saat dibuka.
+void OpenLeaderboard(Leaderboard *l);
+// Menutup file yang dibutuhkan untuk leaderboard dan history. Prosedur ini harus diekskusi setelah program selesai dijalankan.
+void CloseLeaderboard(Leaderboard *l);
+// Merefresh buffer leaderboard jika history baru sudah ditulis ke dalam file.
+void RefreshLeaderboardBuffer(Leaderboard *l);
+// Menulis history ke file history.
+void WriteHistory(Leaderboard *l, History *h);
+
+
 void ParseHistory(History *h, int len, int page);
 int HistoryToBuffer(char *buffer, History h);
 int BufferToHistory(char *buffer, History *h);
 
-void __TestHistory__();
+void TestHistory();
 
 #endif // _LEADERBOARD_H_
