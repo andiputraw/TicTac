@@ -40,6 +40,7 @@ typedef struct {
     ScoreLinePos scoreLinePos;
     WinCondition winCondition;
     Font font;
+    int turnCount;
 } Board;
 
 
@@ -51,6 +52,8 @@ void ResetBoard(Board*b);
 void CreateBox(Box *box);
 void SetScoreLine(Board *b,int index);
 void DrawGameOverScene(Board *b);
+void PlayVsBot(Board *b, int index, Rectangle rec);
+int CalculateBotMove();
 
 int __2Dto1D(int maxCol, int row, int col);
 void __1DTo2D(int index, int maxCol, int *row, int *col);

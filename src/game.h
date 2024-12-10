@@ -14,7 +14,8 @@ typedef struct
 
 typedef enum{
   FIRST,
-  SECOND
+  SECOND,
+  NEITHER
 } Turn;
 
 typedef enum
@@ -49,25 +50,25 @@ typedef struct{
   VsMode vsMode;
   Player p1;
   Player p2;
-
 } GameState;
 
-// Sementara
 typedef struct{
+    int timeAmount;
+    bool isRunning;
+    float elapsedTime;
     int seconds;
     int minutes;
-    bool isRunning;
-    double startTime;    
-    double pauseTime; 
+    Font font;
+    GameState *gameState;
 } Timer;
 
 
 void UpdateScreen(Screen *s, int w, int h);
 
 // Sementara
-void CreateTimer(Timer *timer);
-void UpdateTimer(GameState *gameState, Timer *timer);
-void DrawTimer(Screen *screen, Timer *timer, Font font);
+void CreateTimer(Timer *timer,GameState *gameState, Font font);
+void UpdateTimer(Timer *timer);
+void DrawTimer(Screen *screen, Timer *timer);
 
 
 #endif // _SCREEN_H
