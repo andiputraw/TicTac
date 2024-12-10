@@ -4,6 +4,20 @@
 #include "board.h"
 #include "player.h"
 #include "menu.h"
+#include "leaderboard.h"
+
+// #define TEST
+
+#ifdef TEST
+
+void test_case(){
+    printf("EXECUTING HISTORY TEST CASE\n");
+    printf("for whatever reason, test history is not executed\n");
+    TestHistory();
+    printf("HISTORY TEST CASE COMPLETED\n");
+}
+
+#endif // TEST
 
 int main(void)
 {
@@ -11,24 +25,39 @@ int main(void)
     Board b;
     MainMenu mainMenu;
     ModeSelectMenu modeSelectMenu;
+    LeaderboardMenu leaderBoardMenu;
     Color skyBlue = CLITERAL(Color){102, 191, 255, 255};
-    Scene scene = MAIN_MENU;
+    Scene scene;
     Font font;
+    Leaderboard leaderboard;
     GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSPLAYER};
     Timer timer;
 
     char p1_container[255] = {0};
     char p2_container[255] = {0};
 
+    #ifdef TEST
+    printf("EXECUTING TEST CASE...\n");
+    test_case();
+    return 0;
+    #endif // TEST
+
+    // pre window configuration
     UpdateScreen(&s, 800, 450);
+    OpenLeaderboard(&leaderboard);
+
     SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST);
+
     InitWindow(s.width, s.height, "Tic Tac Toe - TCC");
 
-    font = LoadFont("assets/fonts/Poppins/Poppins-Regular.ttf");
-    SetWindowMinSize(800, 450); 
+    // post window configuration
+    font = LoadFontEx("assets/fonts/Poppins/Poppins-Regular.ttf", 96, NULL, 0);
+    SetWindowMinSize(800, 450);
 
+    // menu initializing
     CreateMainMenu(&mainMenu, &s, &scene, font);
     CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene, p1_container, p2_container, font);
+    CreateLeaderboardMenu(&leaderBoardMenu, &gameState, &s, &scene, &leaderboard, font);
     CreateTimer(&timer);
     // printf("HELLO WORLD");
 
@@ -36,22 +65,26 @@ int main(void)
 
     CreateBoard(&b,&gameState, BOARD_3_X_3, &s, font);
     b.turn = FIRST;
-    scene = MAIN_MENU;
+    scene = LEADERBORAD_MENU;
     while (!WindowShouldClose())
     {
 
 
         UpdateScreen(&s, GetScreenWidth(), GetScreenHeight());
+
+        BeginDrawing();
+        ClearBackground(WHITE);
         if (scene == GAMEPLAY)
         {
             UpdateTimer(&gameState,&timer);
             UpdateBoard(&b);
+            DrawBoard(&b);
         }
         else if(scene == MAIN_MENU)
         {
             UpdateMainMenu(&mainMenu);
+            MainMenuDraw(mainMenu);
         }else if(scene == SELECT_MODES_MENU){
-            // printf("WE ARE ON A LOOP");
             UpdateModeSelectMenu(&modeSelectMenu);
         }
 
@@ -71,12 +104,15 @@ int main(void)
         }
         else if(scene == SELECT_MODES_MENU){
             ModeSelectMenuDraw(modeSelectMenu);
+        }else if(scene == LEADERBORAD_MENU){
+            UpdateLeaderboardMenu(&leaderBoardMenu);
+            DrawLeaderboardMenu(&leaderBoardMenu);
         }
-        
+
         EndDrawing();
     }
     UnloadFont(font);
     CloseWindow();
-
+    CloseLeaderboard(&leaderboard);
     return 0;
 }
