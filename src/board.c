@@ -52,12 +52,11 @@ void UpdateBoard(Board *b)
             index = (j * 3) + i;
             b->boxes[index].rec = rec;
             mouse = GetMousePosition();
-            if (CheckCollisionPointRec(mouse, rec))
+            if (CheckCollisionPointRec(mouse, rec) && b->gameState->gameStatus == PLAYING)
             {
                 b->boxes[index].isHover = true;
                 if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 {
-                    printf("%d", index);
                     if (b->boxes[index].value == BOX_EMPTY)
                     {
                         if (b->turn == FIRST)
@@ -73,6 +72,7 @@ void UpdateBoard(Board *b)
                         if (__IsWin(b, index))
                         {
                             SetScoreLine(b,index);
+                            b->gameState->gameStatus = ENDED;
                         }
                     }
                     b->boxes[index].isClicked = true;
@@ -136,14 +136,22 @@ void DrawBoard(Board *b)
             assert("UNREACHABLE" || box.value);
             break;
         }
+        if(__IsWin(b,i)){
+            DrawLineEx(b->scoreLinePos.startPos, b->scoreLinePos.endPos, 8.0f,BLACK);
+         }
     }
-    if(__IsWin(b,i)){
-        DrawLineEx(b->scoreLinePos.startPos, b->scoreLinePos.endPos, 8.0f,BLACK);
-    }
+
+    // Draw Turn
     if(b->turn == FIRST){
-        DrawTextEx(b->font,TextFormat("%s's Turn",b->gameState->p1.name),(Vector2){10,10},25,1, BLACK);
+        Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),25,1).x/2,.y=(b->screen->height/1.2)};
+        DrawTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),turnPos,25,1, RED);
     }else if(b->turn == SECOND){
-        DrawTextEx(b->font,TextFormat("%s's Turn",b->gameState->p2.name), (Vector2) {10,10},25,1,BLACK);
+        Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name),25,1).x/2,.y=(b->screen->height/1.2)};
+        DrawTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name), turnPos,25,1,BLUE);
+    }
+
+    if(b->gameState->gameStatus == ENDED &&b->gameState->scene == GAMEPLAY ){
+        DrawGameOverScene(b);
     }
 }
 
@@ -274,4 +282,27 @@ void ResetBoard(Board *b){
     b->scoreLinePos.startPos = (Vector2) {0,0};
     b->scoreLinePos.endPos = (Vector2) {0,0};
     b->turn = FIRST;
+    b->gameState->gameStatus = PLAYING;
+}
+
+void DrawGameOverScene(Board *b){
+    Rectangle rec = (Rectangle) {.height = b->screen->height, .width = b->screen->width, .x = 0, .y = 0};
+    const char *gameOverTxt, *winnerTxt, *optionTxt;
+    int marginTop;
+    int fontSize;
+    marginTop = b->screen->height * 0.05;
+    fontSize = b->screen->height * 0.1;
+    gameOverTxt = "GAME OVER";
+    if(b->turn == SECOND){
+        winnerTxt = TextFormat("%s WIN!",b->gameState->p1.name);
+    }else if(b->turn == FIRST){
+        winnerTxt = TextFormat("%s WIN!",b->gameState->p2.name);
+    }
+    optionTxt = "Press 'r' to restart"; 
+
+    DrawRectangleRec(rec, Fade(WHITE, 0.7));
+    DrawTextEx(b->font,gameOverTxt, (Vector2){b->screen->width/2 - MeasureTextEx(b->font, gameOverTxt, fontSize,1).x/2, b->screen->height/3},fontSize, 1, DARKGRAY);
+    DrawTextEx(b->font,winnerTxt,(Vector2) {b->screen->width/2 - MeasureTextEx(b->font, winnerTxt, fontSize*0.8,1).x/2, (b->screen->height/2 - (fontSize*0.8)/2) + marginTop},fontSize*0.8,1, DARKGRAY);
+    DrawTextEx(b->font, optionTxt, (Vector2) {b->screen->width/2 - MeasureTextEx(b->font, optionTxt, fontSize*0.5, 1).x/2, (b->screen->height/2 - (fontSize*0.5)/2) +(marginTop*3)},fontSize*0.5,1, DARKGRAY);
+
 }

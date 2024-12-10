@@ -178,6 +178,8 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
         UpdateButton(buttons[i]);
         if(buttons[i]->isClicked){
             *menu->scene = GAMEPLAY;
+            menu->gameState->gameStatus = PLAYING;
+            printf("%d",menu->gameState->gameStatus);
         }
     }
 

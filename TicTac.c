@@ -15,6 +15,7 @@ int main(void)
     Scene scene = MAIN_MENU;
     Font font;
     GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSPLAYER};
+    Timer timer;
 
     char p1_container[255] = {0};
     char p2_container[255] = {0};
@@ -28,6 +29,7 @@ int main(void)
 
     CreateMainMenu(&mainMenu, &s, &scene, font);
     CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene, p1_container, p2_container, font);
+    CreateTimer(&timer);
     // printf("HELLO WORLD");
 
     SetTargetFPS(24);
@@ -37,10 +39,12 @@ int main(void)
     scene = MAIN_MENU;
     while (!WindowShouldClose())
     {
+
+
         UpdateScreen(&s, GetScreenWidth(), GetScreenHeight());
         if (scene == GAMEPLAY)
         {
-
+            UpdateTimer(&gameState,&timer);
             UpdateBoard(&b);
         }
         else if(scene == MAIN_MENU)
@@ -53,10 +57,13 @@ int main(void)
 
         BeginDrawing();
         ClearBackground(WHITE);
-
         if (scene == GAMEPLAY)
         {
+            DrawTimer(&s, &timer, font);
             DrawBoard(&b);
+            if(gameState.gameStatus == ENDED){
+                DrawGameOverScene(&b);
+            }
         }
         else if(scene == MAIN_MENU)
         {

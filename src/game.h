@@ -2,6 +2,8 @@
 #define _SCREEN_H
 
 #include "player.h"
+#include "raylib.h"
+#include <stdbool.h>
 
 typedef struct
 {
@@ -26,7 +28,7 @@ typedef enum
 {
   PLAYING = 0,
   PAUSED,
-  ENDED
+  ENDED,
 } GameStatus;
 
 typedef enum{
@@ -50,8 +52,22 @@ typedef struct{
 
 } GameState;
 
+// Sementara
+typedef struct{
+    int seconds;
+    int minutes;
+    bool isRunning;
+    double startTime;    
+    double pauseTime; 
+} Timer;
+
 
 void UpdateScreen(Screen *s, int w, int h);
+
+// Sementara
+void CreateTimer(Timer *timer);
+void UpdateTimer(GameState *gameState, Timer *timer);
+void DrawTimer(Screen *screen, Timer *timer, Font font);
 
 
 #endif // _SCREEN_H
