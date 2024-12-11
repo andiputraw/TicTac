@@ -35,6 +35,7 @@ void UpdateButton(Button *this) {
             this->isClicked = false;
         }
     }else {
+        this->isClicked = false;
         this->isHover = false;
     }
 }

@@ -46,7 +46,8 @@ int main(void)
     UpdateScreen(&s, 800, 450);
     OpenLeaderboard(&leaderboard);
 
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST);
+    // SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
     InitWindow(s.width, s.height, "Tic Tac Toe - TCC");
 
@@ -74,24 +75,11 @@ int main(void)
 
         BeginDrawing();
         ClearBackground(WHITE);
+
         if (scene == GAMEPLAY)
         {
             UpdateTimer(&gameState,&timer);
             UpdateBoard(&b);
-            DrawBoard(&b);
-        }
-        else if(scene == MAIN_MENU)
-        {
-            UpdateMainMenu(&mainMenu);
-            MainMenuDraw(mainMenu);
-        }else if(scene == SELECT_MODES_MENU){
-            UpdateModeSelectMenu(&modeSelectMenu);
-        }
-
-        BeginDrawing();
-        ClearBackground(WHITE);
-        if (scene == GAMEPLAY)
-        {
             DrawTimer(&s, &timer, font);
             DrawBoard(&b);
             if(gameState.gameStatus == ENDED){
@@ -100,9 +88,10 @@ int main(void)
         }
         else if(scene == MAIN_MENU)
         {
+            UpdateMainMenu(&mainMenu);
             MainMenuDraw(mainMenu);
-        }
-        else if(scene == SELECT_MODES_MENU){
+        }else if(scene == SELECT_MODES_MENU){
+            UpdateModeSelectMenu(&modeSelectMenu);
             ModeSelectMenuDraw(modeSelectMenu);
         }else if(scene == LEADERBORAD_MENU){
             UpdateLeaderboardMenu(&leaderBoardMenu);

@@ -79,6 +79,9 @@ void UpdateMainMenu(MainMenu *mainMenu){
     if(mainMenu->playBtn.isClicked){
         *mainMenu->scene = SELECT_MODES_MENU;
     }
+    if(mainMenu->historyBtn.isClicked) {
+        *mainMenu->scene = LEADERBORAD_MENU;
+    }
 }
 
 void MainMenuDraw(MainMenu mainMenu){
@@ -303,6 +306,10 @@ void UpdateLeaderboardMenu(LeaderboardMenu *menu){
         }else {
             menu->menuScene = LeaderboardMenuLeaderboard;
         }
+    }
+
+    if(menu->backBtn.isClicked) {
+        *menu->scene = MAIN_MENU;
     }
 }
 

@@ -17,7 +17,7 @@ typedef enum{
   SECOND
 } Turn;
 
-typedef enum
+typedef enum Scene
 {
   MAIN_MENU = 0,
   SELECT_MODES_MENU,
