@@ -4,13 +4,14 @@
 #include "raylib.h"
 #include <stdio.h>
 
-void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s, Font font)
+void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font)
 {
     b->mode = mode;
     b->screen = s;
     b->gameState = gameState;
     b->font = font;
     b->turnCount = 0;
+    b->timer = timer;
 
     for (int i = 0; i < MAX_BOX_COUNT; i++)
     {
@@ -43,7 +44,7 @@ void UpdateBoard(Board *b)
     Rectangle rec;
     Vector2 mouse;
     int i = 0, j = 0;
-
+    bool isThinking;
     int index;
     for (i = 0; i < 3; i++)
     {
@@ -52,49 +53,33 @@ void UpdateBoard(Board *b)
             rec = (Rectangle){left_upper_square_x + (i * s) + (offset * i), left_upper_square_y + (j * s) + (offset * j), s, s};
             index = (j * 3) + i;
             b->boxes[index].rec = rec;
-            PlayVsBot(b,index,rec);
-            // mouse = GetMousePosition();
-            // if (CheckCollisionPointRec(mouse, rec) && b->gameState->gameStatus == PLAYING)
-            // {
-            //     b->boxes[index].isHover = true;
-            //     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            //     {
-            //         if (b->boxes[index].value == BOX_EMPTY)
-            //         {
-            //             b->turnCount++;
-            //             printf("%d", b->turnCount);
-            //             if (b->turn == FIRST)
-            //             {
-            //                 b->boxes[index].value = BOX_O;
-            //                 b->turn = SECOND;
-            //             }
-            //             else if (b->turn == SECOND)
-            //             {
-            //                 b->boxes[index].value = BOX_X;
-            //                 b->turn = FIRST;
-            //             }
-            //             if (__IsWin(b, index))
-            //             {
-            //                 b->turnCount = 0;
-            //                 SetScoreLine(b,index);
-            //                 b->gameState->gameStatus = ENDED;
-            //             }else if(b->turnCount >= b->board_len){
-            //                 b->turnCount = 0;
-            //                 b->turn = NEITHER;
-            //                 b->gameState->gameStatus = ENDED;
-            //             }
-            //         }
-            //         b->boxes[index].isClicked = true;
-            //     }
-            //     else
-            //     {
-            //         b->boxes[index].isClicked = false;
-            //     }
-            // }
-            // else
-            // {
-            //     b->boxes[index].isHover = false;
-            // }
+            // PlayVsBot(b,index,rec);
+            mouse = GetMousePosition();
+            if (CheckCollisionPointRec(mouse, rec) && b->gameState->gameStatus == PLAYING)
+            {
+                b->boxes[index].isHover = true;
+                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                {
+                    if (b->boxes[index].value == BOX_EMPTY)
+                    {
+                        // if(b->gameState->vsMode == VSPLAYER){
+                        //     PlayVsPlayer(b, index);
+                        // }else{
+                        //     PlayVsBot(b, index);
+                        // }
+                        PlayVsBot(b, index);
+                    }
+                    b->boxes[index].isClicked = true;
+                }
+                else
+                {
+                    b->boxes[index].isClicked = false;
+                }
+            }
+            else
+            {
+                b->boxes[index].isHover = false;
+            }
         }
     }
     if(IsKeyPressed(KEY_R)){
@@ -323,53 +308,62 @@ int CalculateBotMove(){
     return index;
 }
 
-void PlayVsBot(Board *b, int index, Rectangle rec){
+void PlayVsBot(Board *b, int index){
     int botIndex;
-    Vector2 mouse;
-            mouse = GetMousePosition();
-            if (CheckCollisionPointRec(mouse, rec) && b->gameState->gameStatus == PLAYING)
-            {
-                b->boxes[index].isHover = true;
-                if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-                {
-                    if (b->boxes[index].value == BOX_EMPTY)
-                    {
-                        b->turnCount++;
-                        printf("%d", b->turnCount);
-                        b->boxes[index].value = BOX_O;
-                        b->turn = SECOND;
-                        if (b->turn == SECOND)
-                        {
-                            for (int i = 0; i < b->board_len; i++)
-                            {
-                                botIndex = CalculateBotMove();
-                                if(b->boxes[botIndex].value ==BOX_EMPTY){
-                                    b->turnCount++;
-                                    b->boxes[botIndex].value = BOX_X;
-                                    b->turn = FIRST;
-                                    break;
-                                }
-                            }
-                        }
-                        if (__IsWin(b, index) || __IsWin(b, botIndex))
-                        {
-                            b->turnCount = 0;
-                            SetScoreLine(b,index);
-                            b->gameState->gameStatus = ENDED;
-                        }else if(b->turnCount >= b->board_len){
-                            b->turnCount = 0;
-                            b->turn = NEITHER;
-                            b->gameState->gameStatus = ENDED;
-                        }
-                    }
-                    b->boxes[index].isClicked = true;
-                }
-                else
-                {
-                    b->boxes[index].isClicked = false;
-                }
-            }else
-            {
-                b->boxes[index].isHover = false;
+    b->turnCount++;
+    printf("%d", b->turnCount);
+    b->boxes[index].value = BOX_O;
+    b->turn = SECOND;
+    if (b->turn == SECOND)
+    {
+        for (int i = 0; i < b->board_len; i++)
+        {
+            botIndex = CalculateBotMove();
+            if(b->boxes[botIndex].value ==BOX_EMPTY){
+                b->turnCount++;
+                b->boxes[botIndex].value = BOX_X;
+                b->turn = FIRST;
+                break;
             }
+        }
+      }
+      if (__IsWin(b, index))
+      {
+          b->turnCount = 0;
+          SetScoreLine(b,index);
+          b->gameState->gameStatus = ENDED;
+      }else if(__IsWin(b, botIndex)){
+          b->turnCount = 0;
+          SetScoreLine(b,botIndex);
+          b->gameState->gameStatus = ENDED;
+      }else if(b->turnCount >= b->board_len){
+          b->turnCount = 0;
+          b->turn = NEITHER;
+          b->gameState->gameStatus = ENDED;
+      }
+}
+
+void PlayVsPlayer(Board *b, int index){
+    b->turnCount++;
+    printf("%d", b->turnCount);
+    if (b->turn == FIRST)
+    {
+        b->boxes[index].value = BOX_O;
+        b->turn = SECOND;
+    }
+    else if (b->turn == SECOND)
+    {
+        b->boxes[index].value = BOX_X;
+        b->turn = FIRST;
+    }
+    if (__IsWin(b, index))
+    {
+        b->turnCount = 0;
+        SetScoreLine(b,index);
+        b->gameState->gameStatus = ENDED;
+    }else if(b->turnCount >= b->board_len){
+        b->turnCount = 0;
+        b->turn = NEITHER;
+        b->gameState->gameStatus = ENDED;
+    }
 }

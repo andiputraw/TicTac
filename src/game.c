@@ -41,6 +41,5 @@ void UpdateTimer(Timer *timer){
 }
 
 void DrawTimer(Screen *s, Timer *timer){
-    int xPos, yPos;
     DrawTextEx(timer->font, TextFormat("%02d:%02d",timer->minutes, timer->seconds), (Vector2){s->width/2.85,s->height/5.7},30,1,DARKGRAY);
 }
