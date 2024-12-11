@@ -58,12 +58,12 @@ int main(void)
     CreateMainMenu(&mainMenu, &s, &scene, font);
     CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene, p1_container, p2_container, font);
     CreateLeaderboardMenu(&leaderBoardMenu, &gameState, &s, &scene, &leaderboard, font);
-    CreateTimer(&timer);
+    CreateTimer(&timer,&gameState, font);
     // printf("HELLO WORLD");
 
     SetTargetFPS(24);
 
-    CreateBoard(&b,&gameState, BOARD_3_X_3, &s, font);
+    CreateBoard(&b,&gameState, BOARD_3_X_3, &s,&timer, font);
     b.turn = FIRST;
     scene = LEADERBORAD_MENU;
     while (!WindowShouldClose())
@@ -76,7 +76,7 @@ int main(void)
         ClearBackground(WHITE);
         if (scene == GAMEPLAY)
         {
-            UpdateTimer(&gameState,&timer);
+            UpdateTimer(&timer);
             UpdateBoard(&b);
             DrawBoard(&b);
         }
@@ -92,7 +92,7 @@ int main(void)
         ClearBackground(WHITE);
         if (scene == GAMEPLAY)
         {
-            DrawTimer(&s, &timer, font);
+            DrawTimer(&s, &timer);
             DrawBoard(&b);
             if(gameState.gameStatus == ENDED){
                 DrawGameOverScene(&b);

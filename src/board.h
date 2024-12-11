@@ -40,17 +40,22 @@ typedef struct {
     ScoreLinePos scoreLinePos;
     WinCondition winCondition;
     Font font;
+    int turnCount;
+    Timer *timer;
 } Board;
 
 
 
-void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s, Font font);
+void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font);
 void DrawBoard(Board *b);
 void UpdateBoard(Board *b);
 void ResetBoard(Board*b);
 void CreateBox(Box *box);
 void SetScoreLine(Board *b,int index);
 void DrawGameOverScene(Board *b);
+void PlayVsBot(Board *b, int index);
+int CalculateBotMove();
+void PlayVsPlayer(Board *b , int index);
 
 int __2Dto1D(int maxCol, int row, int col);
 void __1DTo2D(int index, int maxCol, int *row, int *col);
