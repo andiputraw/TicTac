@@ -7,39 +7,39 @@ void UpdateScreen(Screen *s, int w, int h ) {
 }
 
 // SEMENTARA
-void CreateTimer(Timer *timer){
+void CreateTimer(Timer *timer, GameState *gameState, Font font){
         timer->seconds = 0;
+        timer->minutes = 0;
+        timer->timeAmount = 0;
         timer->isRunning = false;
-        timer->startTime = 0;
-        timer->pauseTime = 0;    
+        timer->elapsedTime = 0; 
+        timer->font = font;
+        timer->gameState = gameState;
 
 }
 
-//TIMER BELUM BENARRRR!!!!!!!!!!!!!!!!!!!!!
-void UpdateTimer(GameState *gameState, Timer *timer){
-    if(gameState->gameStatus == PLAYING){
+void UpdateTimer(Timer *timer){
+    if(timer->gameState->gameStatus != PLAYING){
+        timer->timeAmount = 0;
+        timer->elapsedTime = 0;
+        timer->isRunning = false;
 
-        if(timer->isRunning){
-            timer->isRunning = false;
-            timer->pauseTime = GetTime() - timer->startTime;
-        }else{
-            timer->isRunning = true;
-            timer->startTime = GetTime() - timer->pauseTime;
+    }else{
+        timer->isRunning = true;
+    }
+
+    if(timer->isRunning){
+        timer->elapsedTime += GetFrameTime();
+        if (timer->elapsedTime >= 1.0f) {
+                timer->timeAmount++;
+                timer->elapsedTime -= 1.0f;
         }
     }
-    if(gameState->gameStatus != PLAYING){
-        timer->seconds = 0;
-        timer->isRunning = false;
-        timer->startTime = 0;
-        timer->pauseTime = 0;
-    }
-    if(timer->isRunning){
-        timer->seconds = ((int)(GetTime() - timer->startTime))%60;
-        timer->minutes = (int)((GetTime() - timer->startTime))/60;
-    }
+
+    timer->minutes = timer->timeAmount / 60;
+    timer->seconds = timer->timeAmount % 60;
 }
 
-void DrawTimer(Screen *s, Timer *timer, Font font){
-    int xPos, yPos;
-    DrawTextEx(font, TextFormat("%02d:%02d",timer->minutes, timer->seconds), (Vector2){s->width/2.85,s->height/5.7},30,1,DARKGRAY);
+void DrawTimer(Screen *s, Timer *timer){
+    DrawTextEx(timer->font, TextFormat("%02d:%02d",timer->minutes, timer->seconds), (Vector2){s->width/2.85,s->height/5.7},30,1,DARKGRAY);
 }
