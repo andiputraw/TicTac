@@ -66,7 +66,7 @@ int main(void)
 
     CreateBoard(&b,&gameState, BOARD_3_X_3, &s,&timer, font);
     b.turn = FIRST;
-    scene = LEADERBORAD_MENU;
+    scene = MAIN_MENU;
     while (!WindowShouldClose())
     {
 
@@ -75,25 +75,10 @@ int main(void)
 
         BeginDrawing();
         ClearBackground(WHITE);
-
         if (scene == GAMEPLAY)
         {
-            UpdateTimer(&timer);
             UpdateBoard(&b);
-            DrawBoard(&b);
-        }
-        else if(scene == MAIN_MENU)
-        {
-            UpdateMainMenu(&mainMenu);
-            MainMenuDraw(mainMenu);
-        }else if(scene == SELECT_MODES_MENU){
-            UpdateModeSelectMenu(&modeSelectMenu);
-        }
-
-        BeginDrawing();
-        ClearBackground(WHITE);
-        if (scene == GAMEPLAY)
-        {
+            UpdateTimer(&timer);
             DrawTimer(&s, &timer);
             DrawBoard(&b);
             if(gameState.gameStatus == ENDED){
