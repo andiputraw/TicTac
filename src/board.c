@@ -254,8 +254,8 @@ void SetScoreLine(Board *b, int index){
     int row,col;
     __1DTo2D(index,3, &row, &col);
     if(b->winCondition == VERTICAL){
-    b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, 0, col)].rec.x + b->boxes[__2Dto1D(3, 0, col)].rec.width/2,.y= b->boxes[__2Dto1D(3, 0, col)].rec.y};
-    b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, 2, col)].rec.x + b->boxes[__2Dto1D(3, 0, col)].rec.width/2,.y= b->boxes[__2Dto1D(3, 2, col)].rec.y + b->boxes[__2Dto1D(3, 2, col)].rec.height};
+        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, 0, col)].rec.x + b->boxes[__2Dto1D(3, 0, col)].rec.width/2,.y= b->boxes[__2Dto1D(3, 0, col)].rec.y};
+        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, 2, col)].rec.x + b->boxes[__2Dto1D(3, 0, col)].rec.width/2,.y= b->boxes[__2Dto1D(3, 2, col)].rec.y + b->boxes[__2Dto1D(3, 2, col)].rec.height};
     }else if(b->winCondition == HORIZONTAL){
         b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, row, 0)].rec.x, .y = b->boxes[__2Dto1D(3, row, 0)].rec.y+b->boxes[__2Dto1D(3, row, 0)].rec.height/2};
         b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, row, 2)].rec.x +  b->boxes[__2Dto1D(3, row, 2)].rec.width, .y = b->boxes[__2Dto1D(3, row, 2)].rec.y+b->boxes[__2Dto1D(3, row, 0)].rec.height/2};
@@ -277,6 +277,7 @@ void ResetBoard(Board *b){
     b->scoreLinePos.endPos = (Vector2) {0,0};
     b->turn = FIRST;
     b->gameState->gameStatus = PLAYING;
+    b->turnCount = 0;
 }
 
 void DrawGameOverScene(Board *b){
@@ -303,9 +304,14 @@ void DrawGameOverScene(Board *b){
 
 }
 
-int CalculateBotMove(){
-    int index = GetRandomValue(0,8);
-    return index;
+int CalculateBotIndex(Board *b, int index){
+    if(b->gameState->botMode==EASY){
+        return CalculateEasyBot(b);
+    }else if(b->gameState->botMode ==MEDIUM){
+        return CalculateMediumBot(b,index);
+    }else{
+        return CalculateHardBot(b,index);
+    }
 }
 
 void PlayVsBot(Board *b, int index){
@@ -316,16 +322,12 @@ void PlayVsBot(Board *b, int index){
     b->turn = SECOND;
     if (b->turn == SECOND)
     {
-        for (int i = 0; i < b->board_len; i++)
-        {
-            botIndex = CalculateBotMove();
-            if(b->boxes[botIndex].value ==BOX_EMPTY){
-                b->turnCount++;
-                b->boxes[botIndex].value = BOX_X;
-                b->turn = FIRST;
-                break;
-            }
+        botIndex = CalculateBotIndex(b, index);
+        if(botIndex >= 0){
+            b->boxes[botIndex].value = BOX_X;
         }
+        b->turn = FIRST;
+        b->turnCount++;
       }
       if (__IsWin(b, index))
       {
@@ -367,3 +369,88 @@ void PlayVsPlayer(Board *b, int index){
         b->gameState->gameStatus = ENDED;
     }
 }
+
+int CalculateEasyBot(Board *b){
+    int index;
+    for(int i = 0; i <= b->board_len; i++){
+        index = GetRandomValue(0,8);
+        if(b->boxes[index].value == BOX_EMPTY){
+            return index;
+        }
+    }
+    return -1;
+}
+
+int CalculateMediumBot(Board *b, int index){
+    int randIndex;
+    // Cek apakah player akan menang
+    if(b->turnCount>1){
+        for (int i = 0; i < b->board_len; i++)
+        {
+            if(b->boxes[i].value==BOX_EMPTY){
+                b->boxes[i].value = BOX_O;
+                if(__IsWin(b,i)){
+                    b->boxes[i].value = BOX_EMPTY;
+                    return i;
+                }
+                b->boxes[i].value = BOX_EMPTY;
+            }
+        }
+
+    }else{
+        for(int i = 0; i < b->board_len; i++){
+            randIndex = GetRandomValue(0,8);
+            if(b->boxes[randIndex].value == BOX_EMPTY){
+                return randIndex;
+            }
+        }
+
+    }
+    return -1;
+}
+
+int CalculateHardBot(Board *b, int index){
+    int randValue;
+    if(b->turnCount>1){
+        for(int i = 0; i <= b->board_len; i++){
+            if(b->boxes[i].value == BOX_EMPTY){
+                    // Cek apakah bisa menang
+                    b->boxes[i].value = BOX_X;
+                    if(__IsWin(b,i)){
+                        b->boxes[i].value = BOX_EMPTY;
+                        return i;
+                    }
+                    b->boxes[i].value = BOX_EMPTY;
+                    // Cek apakah pemain akan menang
+                    b->boxes[i].value = BOX_O;
+                    if(__IsWin(b,i)){
+                        b->boxes[i].value = BOX_EMPTY;
+                        return i;
+                    }
+                    b->boxes[i].value = BOX_EMPTY;
+                }
+
+            }
+            
+        }else{
+            for (int i = 0; i < b->board_len; i++)
+            {
+                // Cek corner
+                randValue = GetRandomValue(0,8);
+                if(b->boxes[i].value == BOX_EMPTY){
+                if(i%2==0){
+                    if(randValue > 5){
+                        return i;
+                        }
+                    }
+                }
+
+            }
+            
+            
+        }
+
+    return CalculateEasyBot(b);
+
+}
+

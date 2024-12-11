@@ -30,7 +30,7 @@ int main(void)
     Scene scene;
     Font font;
     Leaderboard leaderboard;
-    GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSPLAYER};
+    GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSBOT,.botMode = HARD};
     Timer timer;
 
     char p1_container[255] = {0};

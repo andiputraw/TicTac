@@ -39,6 +39,12 @@ typedef enum{
 } VsMode;
 
 typedef enum{
+  EASY,
+  MEDIUM,
+  HARD
+} BotMode;
+
+typedef enum{
   HORIZONTAL,
   VERTICAL,
   DIAGONAL_TOP_LEFT,
@@ -49,6 +55,7 @@ typedef struct{
   Scene scene;
   GameStatus gameStatus;
   VsMode vsMode;
+  BotMode botMode;
   Player p1;
   Player p2;
 } GameState;

@@ -54,7 +54,10 @@ void CreateBox(Box *box);
 void SetScoreLine(Board *b,int index);
 void DrawGameOverScene(Board *b);
 void PlayVsBot(Board *b, int index);
-int CalculateBotMove();
+int CalculateBotIndex(Board *b, int index);
+int CalculateEasyBot(Board *b);
+int CalculateMediumBot(Board *b, int index);
+int CalculateHardBot(Board *b, int index);
 void PlayVsPlayer(Board *b , int index);
 
 int __2Dto1D(int maxCol, int row, int col);
