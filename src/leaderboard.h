@@ -8,7 +8,7 @@
 
 #define LEADERBOARD_PATH "leaderboard.tictac"
 #define HISTORY_PATH "history.tictac"
-#define TWO_MB 1024 * 1024 * 2
+#define TWO_MB 1024 
 
 typedef struct {
     // File taruh leaderboard

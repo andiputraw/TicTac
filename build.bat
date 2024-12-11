@@ -1,7 +1,6 @@
 @echo off
 set CC=.\bin\tcc\tcc
 @REM set CC=zig cc
-
 echo "Compiling..."
 set INPUT=TicTac.c src/game.c  src/board.c src/control.c src/menu.c src/leaderboard.c
 set FLAGS= -Wall -Wextra -g 
