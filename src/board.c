@@ -109,9 +109,10 @@ void UpdateBoard(Board *b)
             }
         }
     }
-    if(IsKeyPressed(KEY_R)){
+    if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_R)){
         ResetBoard(b);
     }
+    
 }
 
 void DrawBoard(Board *b)
@@ -170,6 +171,24 @@ void DrawBoard(Board *b)
         Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name),25,1).x/2,.y=(b->screen->height/1.2)};
         DrawTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name), turnPos,25,1,BLUE);
     }
+    //Draw Score
+    if(b->mode == BOARD_5_X_5){
+        const char* scoreText1;
+        const char* scoreText2;
+        int fontSize = b->screen->width*0.035;
+        Vector2 pos = (Vector2){0,0};
+        Vector2 pos2 = (Vector2){0,b->screen->height/9};
+        if(b->gameState->vsMode == VSBOT){
+            scoreText1 = "Your Score: ";
+            scoreText2 = "Bot Score: ";
+        }else{
+            scoreText1 =TextFormat("%s(Circle) Score: ",b->gameState->p1.name);
+            scoreText2 =TextFormat("%s(Cross) Score: ",b->gameState->p2.name);
+        }
+        DrawTextEx(b->font, TextFormat("%s %d", scoreText1, b->gameState->p1.score),pos, fontSize,1,BLACK);
+        DrawTextEx(b->font, TextFormat("%s %d", scoreText2, b->gameState->p2.score),pos2,fontSize, 1,BLACK);
+    }
+
 
     if(b->gameState->gameStatus == ENDED &&b->gameState->scene == GAMEPLAY){
         DrawGameOverScene(b);
@@ -417,6 +436,8 @@ void ResetBoard(Board *b){
     b->turn = FIRST;
     b->gameState->gameStatus = PLAYING;
     b->turnCount = 0;
+    b->gameState->p1.score = 0;
+    b->gameState->p2.score = 0;
 }
 
 void DrawGameOverScene(Board *b){
@@ -427,14 +448,24 @@ void DrawGameOverScene(Board *b){
     marginTop = b->screen->height * 0.05;
     fontSize = b->screen->height * 0.1;
     gameOverTxt = "GAME OVER";
-    if(b->turn == SECOND){
-        winnerTxt = TextFormat("%s WIN!",b->gameState->p1.name);
-    }else if(b->turn == FIRST){
-        winnerTxt = TextFormat("%s WIN!",b->gameState->p2.name);
-    }else if(b->turn == NEITHER){
-        winnerTxt = "DRAW!";
+    if(b->gameState->vsMode == VSPLAYER){
+        if(b->turn == SECOND){
+            winnerTxt = TextFormat("%s(Circle) WIN!",b->gameState->p1.name);
+        }else if(b->turn == FIRST){
+            winnerTxt = TextFormat("%s(Cross) WIN!",b->gameState->p2.name);
+        }else if(b->turn == NEITHER){
+            winnerTxt = "DRAW!";
+        }
+    }else{
+        if(b->turn == FIRST){
+            winnerTxt = "YOU WIN!";
+        }else if(b->turn == SECOND){
+            winnerTxt = "YOU LOSE!";
+        }else if(b->turn == NEITHER){
+            winnerTxt = "DRAW!";
+        }
     }
-    optionTxt = "Press 'r' to restart"; 
+    optionTxt = "Press 'r' to restart or 'b' to main menu"; 
 
     DrawRectangleRec(rec, Fade(WHITE, 0.8));
     DrawTextEx(b->font,gameOverTxt, (Vector2){b->screen->width/2 - MeasureTextEx(b->font, gameOverTxt, fontSize,1).x/2, b->screen->height/3},fontSize, 1, DARKGRAY);
@@ -459,9 +490,21 @@ void PlayVsBot(Board *b, int index){
     b->boxes[index].value = BOX_O;
     if (__IsScoring(b, index))
       {
+        SetScoreLine(b,index);
           b->turnCount = 0;
-          SetScoreLine(b,index);
-          b->gameState->gameStatus = ENDED;
+          if(b->mode == BOARD_3_X_3){
+            // SetScoreLine(b,index);
+            b->gameState->gameStatus = ENDED;
+          }else if(b->mode == BOARD_5_X_5){
+            b->gameState->p1.score++;
+            if(b->gameState->p1.score >= 5){
+                // SetScoreLine(b,index);
+                b->gameState->gameStatus = ENDED;
+            }else{
+                b->turn = SECOND;
+                b->turnCount++;
+            }
+          }
       }else{
         b->turn = SECOND;
         b->turnCount++;
@@ -472,21 +515,33 @@ void PlayVsBot(Board *b, int index){
         if(botIndex >= 0 && botIndex <=b->board_len){
             b->boxes[botIndex].value = BOX_X;
             if(__IsScoring(b, botIndex)){
-                b->turnCount = 0;
                 SetScoreLine(b,botIndex);
-                b->gameState->gameStatus = ENDED;
+                b->turnCount = 0;
+                if(b->mode == BOARD_3_X_3){
+                    b->gameState->gameStatus = ENDED;
+                }
+                else if (b->mode == BOARD_5_X_5)
+                {
+                    b->gameState->p2.score++;
+                    // SetScoreLine(b,botIndex);
+                    if(b->gameState->p2.score >= 5){
+                        b->gameState->gameStatus = ENDED;
+                    }else{
+                        b->turn = FIRST;
+                        b->turnCount++;
+                    }
+                }
             }else{
                 b->turn = FIRST;
                 b->turnCount++;
             }
         }
       }
-
     if(b->turnCount > b->board_len){
           b->turnCount = 0;
           b->turn = NEITHER;
           b->gameState->gameStatus = ENDED;
-      }
+    }
 }
 
 void PlayVsPlayer(Board *b, int index){
@@ -506,7 +561,21 @@ void PlayVsPlayer(Board *b, int index){
     {
         b->turnCount = 0;
         SetScoreLine(b,index);
-        b->gameState->gameStatus = ENDED;
+        if(b->mode == BOARD_3_X_3){
+            b->gameState->gameStatus = ENDED;
+        }else if(b->mode == BOARD_5_X_5){
+            if(b->turn == SECOND){
+                b->gameState->p1.score++;
+                if(b->gameState->p1.score >= 5){
+                    b->gameState->gameStatus = ENDED;
+                }
+            }else{
+                b->gameState->p2.score++;
+                if(b->gameState->p2.score >= 5){
+                    b->gameState->gameStatus = ENDED;
+                }
+            }
+        }
     }else if(b->turnCount >= b->board_len){
         b->turnCount = 0;
         b->turn = NEITHER;
@@ -559,7 +628,6 @@ int CalculateHardBot(Board *b, int index){
             if(b->boxes[i].value == BOX_EMPTY){
                     b->boxes[i].value = BOX_X;
                     if(__IsScoring(b,i)){
-                        b->boxes[i].value = BOX_EMPTY;
                         return i;
                     }
                     b->boxes[i].value = BOX_EMPTY;
