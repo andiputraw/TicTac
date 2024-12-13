@@ -53,7 +53,6 @@ void UpdateBoard(Board *b)
             rec = (Rectangle){left_upper_square_x + (i * s) + (offset * i), left_upper_square_y + (j * s) + (offset * j), s, s};
             index = (j * 3) + i;
             b->boxes[index].rec = rec;
-            // PlayVsBot(b,index,rec);
             mouse = GetMousePosition();
             if (CheckCollisionPointRec(mouse, rec) && b->gameState->gameStatus == PLAYING)
             {
@@ -62,12 +61,12 @@ void UpdateBoard(Board *b)
                 {
                     if (b->boxes[index].value == BOX_EMPTY)
                     {
-                        // if(b->gameState->vsMode == VSPLAYER){
-                        //     PlayVsPlayer(b, index);
-                        // }else{
-                        //     PlayVsBot(b, index);
-                        // }
-                        PlayVsBot(b, index);
+                        if(b->gameState->vsMode == VSBOT){
+                            PlayVsBot(b, index);
+                        }else{
+                            PlayVsPlayer(b,index);
+                        }
+                        
                     }
                     b->boxes[index].isClicked = true;
                 }
@@ -297,7 +296,7 @@ void DrawGameOverScene(Board *b){
     }
     optionTxt = "Press 'r' to restart"; 
 
-    DrawRectangleRec(rec, Fade(WHITE, 0.7));
+    DrawRectangleRec(rec, Fade(WHITE, 0.8));
     DrawTextEx(b->font,gameOverTxt, (Vector2){b->screen->width/2 - MeasureTextEx(b->font, gameOverTxt, fontSize,1).x/2, b->screen->height/3},fontSize, 1, DARKGRAY);
     DrawTextEx(b->font,winnerTxt,(Vector2) {b->screen->width/2 - MeasureTextEx(b->font, winnerTxt, fontSize*0.8,1).x/2, (b->screen->height/2 - (fontSize*0.8)/2) + marginTop},fontSize*0.8,1, DARKGRAY);
     DrawTextEx(b->font, optionTxt, (Vector2) {b->screen->width/2 - MeasureTextEx(b->font, optionTxt, fontSize*0.5, 1).x/2, (b->screen->height/2 - (fontSize*0.5)/2) +(marginTop*3)},fontSize*0.5,1, DARKGRAY);
@@ -306,10 +305,13 @@ void DrawGameOverScene(Board *b){
 
 int CalculateBotIndex(Board *b, int index){
     if(b->gameState->botMode==EASY){
+        printf("EASY DAYO");
         return CalculateEasyBot(b);
     }else if(b->gameState->botMode ==MEDIUM){
+        printf("MEDIUM DAYO");
         return CalculateMediumBot(b,index);
     }else{
+        printf("HARD DAYO");
         return CalculateHardBot(b,index);
     }
 }
@@ -412,31 +414,36 @@ int CalculateMediumBot(Board *b, int index){
 int CalculateHardBot(Board *b, int index){
     int randValue;
     if(b->turnCount>1){
+        // Cek apakah bisa menang
         for(int i = 0; i <= b->board_len; i++){
             if(b->boxes[i].value == BOX_EMPTY){
-                    // Cek apakah bisa menang
                     b->boxes[i].value = BOX_X;
                     if(__IsWin(b,i)){
                         b->boxes[i].value = BOX_EMPTY;
                         return i;
                     }
                     b->boxes[i].value = BOX_EMPTY;
-                    // Cek apakah pemain akan menang
-                    b->boxes[i].value = BOX_O;
-                    if(__IsWin(b,i)){
-                        b->boxes[i].value = BOX_EMPTY;
-                        return i;
-                    }
-                    b->boxes[i].value = BOX_EMPTY;
                 }
+        }
 
+        // Cek apakah pemain akan menang
+        for (int i = 0; i < b->board_len; i++)
+        {           
+            if(b->boxes[i].value == BOX_EMPTY){
+                b->boxes[i].value = BOX_O;
+                if(__IsWin(b,i)){
+                    b->boxes[i].value = BOX_EMPTY;
+                    return i;
+                }
+                b->boxes[i].value = BOX_EMPTY;
             }
+        } 
             
-        }else{
-            for (int i = 0; i < b->board_len; i++)
-            {
-                // Cek corner
-                randValue = GetRandomValue(0,8);
+    }else{
+        for (int i = 0; i < b->board_len; i++)
+        {
+            // Cek corner/edge/center
+            randValue = GetRandomValue(0,8);
                 if(b->boxes[i].value == BOX_EMPTY){
                 if(i%2==0){
                     if(randValue > 5){
@@ -446,8 +453,6 @@ int CalculateHardBot(Board *b, int index){
                 }
 
             }
-            
-            
         }
 
     return CalculateEasyBot(b);

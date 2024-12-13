@@ -20,7 +20,6 @@ typedef struct
     InputText InputP1Name;
     InputText InputP2Name;
     Button classicModeBtn;
-    Button pyramidModeBtn;
     Button extendedModeBtn;
     Button easyBotBtn;
     Button mediumBotBtn;
@@ -28,7 +27,6 @@ typedef struct
     Screen *screen;
     Scene *scene;
     GameState *gameState;
-    VsMode *vsMode;
 } ModeSelectMenu;
 
 typedef enum {
@@ -54,7 +52,7 @@ void MainMenuDraw(MainMenu mainMenu);
 
 void CreateModeSelectMenu (ModeSelectMenu *menu, GameState *gameState, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font);
 void UpdateModeSelectMenu(ModeSelectMenu *selectMenu);
-void ModeSelectMenuDraw(ModeSelectMenu selectMenu);
+void ModeSelectMenuDraw(ModeSelectMenu *selectMenu);
 
 void CreateLeaderboardMenu(LeaderboardMenu *menu, GameState *gameState, Screen *screen, Scene *scene, Leaderboard *l, Font font);
 void UpdateLeaderboardMenu(LeaderboardMenu *menu);

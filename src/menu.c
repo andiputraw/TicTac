@@ -116,9 +116,9 @@ void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *scr
     int btn_margin_right = btn_width * 0.1;
     int menu_font_size = screen->width*0.03;
     Rectangle rec;
-    Button *buttons[3] = {&menu->classicModeBtn, &menu->extendedModeBtn, &menu->pyramidModeBtn};
-    char *btn_text[3] = {"Classic", "Extended", "Pyramid"};
-    for(int i = 0; i < 3; i++) {
+    Button *buttons[2] = {&menu->classicModeBtn, &menu->extendedModeBtn};
+    char *btn_text[2] = {"Classic", "Extended"};
+    for(int i = 0; i < 2; i++) {
         rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 3 , 0.8);
         CreateButton(buttons[i], rec, btn_text[i], MainMenuButtonStyle(font, menu_font_size));
     }
@@ -134,7 +134,11 @@ void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *scr
 
     Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
     char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
-
+    if(gameState->vsMode ==VSPLAYER){
+        menu->vsPlayerBtn.style.bgColor = BLUE;
+    }else{
+        menu->vsBotBtn.style.bgColor = BLUE;
+    }
     for( int i = 0; i < 2; i++){
         rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 2, 0.4);
         CreateButton(vs_btn[i], rec, vs_btn_text[i], MainMenuButtonStyle(font, menu_font_size));
@@ -151,7 +155,6 @@ void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *scr
     *menu = (ModeSelectMenu){
         .classicModeBtn = menu->classicModeBtn,
         .extendedModeBtn = menu->extendedModeBtn,
-        .pyramidModeBtn = menu->pyramidModeBtn,
         .screen = screen,
         .InputP1Name = menu->InputP1Name,
         .InputP2Name = menu->InputP2Name,
@@ -172,9 +175,9 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     int btn_margin_right = btn_width * 0.2;
     int menu_font_size = menu->screen->width*0.03;
     Rectangle rec;
-    Button *buttons[3] = {&menu->classicModeBtn, &menu->extendedModeBtn, &menu->pyramidModeBtn};
-    char *btn_text[3] = {"Classic", "Extended", "Pyramid"};
-    for(int i = 0; i < 3; i++) {
+    Button *buttons[2] = {&menu->classicModeBtn, &menu->extendedModeBtn};
+    char *btn_text[2] = {"Classic", "Extended"};
+    for(int i = 0; i < 2; i++) {
         rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width, btn_margin_right, 3 , 0.8);
         buttons[i]->rect = rec;
         buttons[i]->style.fontSize = menu_font_size;
@@ -197,7 +200,11 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     menu->InputP2Name.style.fontSize = menu_font_size;
 
     UpdateInputText(&menu->InputP1Name);
-    UpdateInputText(&menu->InputP2Name);
+    if(menu->gameState->vsMode == VSPLAYER){
+
+        UpdateInputText(&menu->InputP2Name);
+    }
+
 
     for(int i = 0; i<20; i++){
         menu->gameState->p1.name[i] = menu->InputP1Name.value[i];
@@ -207,6 +214,13 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
 
     Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
     char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
+    if(menu->gameState->vsMode ==VSPLAYER){
+        menu->vsPlayerBtn.style.bgColor = BLUE;
+        menu->vsBotBtn.style.bgColor = GRAY;
+    }else{
+        menu->vsPlayerBtn.style.bgColor = GRAY;
+        menu->vsBotBtn.style.bgColor = GREEN;
+    }
 
     for( int i = 0; i < 2; i++){
         rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width + 30, btn_margin_right, 2, 0.4);
@@ -216,6 +230,20 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     }
 
     Button *diff_btn[3] = {&menu->easyBotBtn, &menu->mediumBotBtn, &menu->hardBotBtn};
+    
+    if(menu->gameState->botMode == EASY){
+        menu->easyBotBtn.style.bgColor = BLUE;
+        menu->mediumBotBtn.style.bgColor = GRAY;
+        menu->hardBotBtn.style.bgColor = GRAY;
+    }else if(menu->gameState->botMode == MEDIUM){
+        menu->easyBotBtn.style.bgColor = GRAY;
+        menu->mediumBotBtn.style.bgColor = ORANGE;
+        menu->hardBotBtn.style.bgColor = GRAY;
+    }else{
+        menu->easyBotBtn.style.bgColor = GRAY;
+        menu->mediumBotBtn.style.bgColor = GRAY;
+        menu->hardBotBtn.style.bgColor = RED;
+    }
 
     for(int i = 0; i < 3; i++){
         rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width, btn_margin_right, 3, 0.6);
@@ -223,22 +251,41 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
         diff_btn[i]->style.fontSize = menu_font_size;
         UpdateButton(diff_btn[i]);
     }
+
+    if(menu->vsPlayerBtn.isClicked){
+        menu->gameState->vsMode = VSPLAYER;
+    }
+    if(menu->vsBotBtn.isClicked){
+        menu->gameState->vsMode = VSBOT;
+    }
+    if(menu->easyBotBtn.isClicked){
+        menu->gameState->botMode = EASY;
+    }
+    if(menu->mediumBotBtn.isClicked){
+        menu->gameState->botMode = MEDIUM;
+    }
+    if(menu->hardBotBtn.isClicked){
+        menu->gameState->botMode = HARD;
+    }
+    
 }
 
-void ModeSelectMenuDraw(ModeSelectMenu selectMenu){
-    DrawButton(&selectMenu.classicModeBtn);
-    DrawButton(&selectMenu.extendedModeBtn);
-    DrawButton(&selectMenu.pyramidModeBtn);
+void ModeSelectMenuDraw(ModeSelectMenu *selectMenu){
+    DrawButton(&selectMenu->classicModeBtn);
+    DrawButton(&selectMenu->extendedModeBtn);
 
-    DrawInputText(&selectMenu.InputP1Name);
-    DrawInputText(&selectMenu.InputP2Name);
+    DrawInputText(&selectMenu->InputP1Name);
+    if(selectMenu->gameState->vsMode == VSPLAYER){
+        DrawInputText(&selectMenu->InputP2Name);
+    }
 
-    DrawButton(&selectMenu.vsPlayerBtn);
-    DrawButton(&selectMenu.vsBotBtn);
-
-    DrawButton(&selectMenu.easyBotBtn);
-    DrawButton(&selectMenu.mediumBotBtn);
-    DrawButton(&selectMenu.hardBotBtn);
+    DrawButton(&selectMenu->vsPlayerBtn);
+    DrawButton(&selectMenu->vsBotBtn);
+    if(selectMenu->gameState->vsMode==VSBOT){
+        DrawButton(&selectMenu->easyBotBtn);
+        DrawButton(&selectMenu->mediumBotBtn);
+        DrawButton(&selectMenu->hardBotBtn);
+    }
 }
 
 int __CalculateMenuButtonFontSize(Screen screen){

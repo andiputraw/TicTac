@@ -30,7 +30,7 @@ int main(void)
     Scene scene;
     Font font;
     Leaderboard leaderboard;
-    GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSBOT,.botMode = HARD};
+    GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSBOT,.botMode = EASY};
     Timer timer;
 
     char p1_container[255] = {0};
@@ -91,7 +91,7 @@ int main(void)
             MainMenuDraw(mainMenu);
         }else if(scene == SELECT_MODES_MENU){
             UpdateModeSelectMenu(&modeSelectMenu);
-            ModeSelectMenuDraw(modeSelectMenu);
+            ModeSelectMenuDraw(&modeSelectMenu);
         }else if(scene == LEADERBORAD_MENU){
             UpdateLeaderboardMenu(&leaderBoardMenu);
             DrawLeaderboardMenu(&leaderBoardMenu);

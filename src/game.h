@@ -41,7 +41,8 @@ typedef enum{
 typedef enum{
   EASY,
   MEDIUM,
-  HARD
+  HARD,
+  NOTBOT,
 } BotMode;
 
 typedef enum{
