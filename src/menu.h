@@ -4,6 +4,7 @@
 #include "control.h"
 #include "game.h"
 #include "leaderboard.h"
+#include "board.h"
 typedef struct
 {
     Button historyBtn;
@@ -27,6 +28,7 @@ typedef struct
     Screen *screen;
     Scene *scene;
     GameState *gameState;
+    Board *b;
 } ModeSelectMenu;
 
 typedef enum {
@@ -50,12 +52,16 @@ void CreateMainMenu(MainMenu *mainmenu, Screen *screen, Scene *scene, Font font)
 void UpdateMainMenu(MainMenu *mainMenu);
 void MainMenuDraw(MainMenu mainMenu);
 
-void CreateModeSelectMenu (ModeSelectMenu *menu, GameState *gameState, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font);
+void CreateModeSelectMenu (ModeSelectMenu *menu, GameState *gameState, Screen *screen, Scene *scene, Board *b, char input_p1[255], char input_p2[255], Font font);
 void UpdateModeSelectMenu(ModeSelectMenu *selectMenu);
 void ModeSelectMenuDraw(ModeSelectMenu *selectMenu);
 
 void CreateLeaderboardMenu(LeaderboardMenu *menu, GameState *gameState, Screen *screen, Scene *scene, Leaderboard *l, Font font);
 void UpdateLeaderboardMenu(LeaderboardMenu *menu);
 void DrawLeaderboardMenu(LeaderboardMenu *menu);
+
+void CrateHistoryMenu();
+void UpdateHistoryMenu();
+void DrawHistoryMenu();
 
 #endif //! MENU_H

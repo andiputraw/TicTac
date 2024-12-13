@@ -13,7 +13,7 @@
 #define BOX_DRAW_SIZE 45
 #define MAX_BOX_COUNT 42
 
-#define BOX_EMPTY 0 
+#define BOX_EMPTY 69
 #define BOX_X 1
 #define BOX_O 2
 
@@ -38,7 +38,7 @@ typedef struct {
     Turn turn;
     GameState *gameState;
     ScoreLinePos scoreLinePos;
-    WinCondition winCondition;
+    ScoreCondition scoreCondition;
     Font font;
     int turnCount;
     Timer *timer;
@@ -62,6 +62,7 @@ void PlayVsPlayer(Board *b , int index);
 
 int __2Dto1D(int maxCol, int row, int col);
 void __1DTo2D(int index, int maxCol, int *row, int *col);
-bool __IsWin(Board *b, int index);
+bool __IsScoring(Board *b, int index);
+bool __IndexIsValid(int len, int index);
 
 #endif // _BOARD_H

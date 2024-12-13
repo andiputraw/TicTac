@@ -110,7 +110,7 @@ Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_he
     };
 }
 
-void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font){
+void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *screen, Scene *scene,Board *b, char input_p1[255], char input_p2[255], Font font){
     int btn_width = screen->width*0.15;
     int btn_height = screen->height*0.1;
     int btn_margin_right = btn_width * 0.1;
@@ -164,7 +164,8 @@ void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *scr
         .mediumBotBtn = menu->mediumBotBtn,
         .hardBotBtn = menu->hardBotBtn,
         .scene = scene,
-        .gameState= gameState
+        .gameState= gameState,
+        .b = b
     };
 
 }
@@ -182,11 +183,11 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
         buttons[i]->rect = rec;
         buttons[i]->style.fontSize = menu_font_size;
         UpdateButton(buttons[i]);
-        if(buttons[i]->isClicked){
-            *menu->scene = GAMEPLAY;
-            menu->gameState->gameStatus = PLAYING;
-            printf("%d",menu->gameState->gameStatus);
-        }
+        // if(buttons[i]->isClicked){
+        //     *menu->scene = GAMEPLAY;
+        //     menu->gameState->gameStatus = PLAYING;
+        //     printf("%d",menu->gameState->gameStatus);
+        // }
     }
 
 
@@ -266,6 +267,17 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     }
     if(menu->hardBotBtn.isClicked){
         menu->gameState->botMode = HARD;
+    }
+
+    if(menu->classicModeBtn.isClicked){
+        menu->b->mode = BOARD_3_X_3;
+        *menu->scene = GAMEPLAY;
+        menu->gameState->gameStatus = PLAYING;
+    }
+    if(menu->extendedModeBtn.isClicked){
+        menu->b->mode = BOARD_5_X_5;
+        *menu->scene = GAMEPLAY;
+        menu->gameState->gameStatus = PLAYING;
     }
     
 }
