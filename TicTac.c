@@ -55,7 +55,7 @@ int main(void)
     SetWindowMinSize(800, 450);
 
     // menu initializing
-    CreateMainMenu(&mainMenu, &s, &scene, font);
+    CreateMainMenu(&mainMenu, &s, &gameState.scene, font);
     CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene,&b, p1_container, p2_container, font);
     CreateLeaderboardMenu(&leaderBoardMenu, &gameState, &s, &scene, &leaderboard, font);
     CreateTimer(&timer,&gameState, font);
@@ -65,7 +65,7 @@ int main(void)
 
     CreateBoard(&b,&gameState, BOARD_3_X_3, &s,&timer, font);
     b.turn = FIRST;
-    scene = MAIN_MENU;
+    gameState.scene = MAIN_MENU;
     while (!WindowShouldClose())
     {
 
@@ -74,7 +74,7 @@ int main(void)
 
         BeginDrawing();
         ClearBackground(WHITE);
-        if (scene == GAMEPLAY)
+        if (gameState.scene == GAMEPLAY)
         {
             UpdateBoard(&b);
             UpdateTimer(&timer);
@@ -84,14 +84,14 @@ int main(void)
                 DrawGameOverScene(&b);
             }
         }
-        else if(scene == MAIN_MENU)
+        else if(gameState.scene == MAIN_MENU)
         {
             UpdateMainMenu(&mainMenu);
             MainMenuDraw(mainMenu);
-        }else if(scene == SELECT_MODES_MENU){
+        }else if(gameState.scene == SELECT_MODES_MENU){
             UpdateModeSelectMenu(&modeSelectMenu);
             ModeSelectMenuDraw(&modeSelectMenu);
-        }else if(scene == LEADERBORAD_MENU){
+        }else if(gameState.scene == LEADERBORAD_MENU){
             UpdateLeaderboardMenu(&leaderBoardMenu);
             DrawLeaderboardMenu(&leaderBoardMenu);
         }
