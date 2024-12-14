@@ -1,3 +1,10 @@
+/**
+ * menu.h
+ * Author : Andi Putra Wijaya & Maulana Ishak
+ * Created: 30 November 2024
+ * 
+ * Header file untuk menu.c. Yang digunakan untuk mengupdate tampilan main menu, mode selection menu dan leaderboard menu.
+ */
 #ifndef MENU_H
 #define MENU_H
 

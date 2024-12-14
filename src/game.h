@@ -1,9 +1,21 @@
+/**
+ * game.h
+ * Author : Andi Putra Wijaya & Maulana Ishak
+ * Created: 15 November 2024
+ * 
+ * Header file untuk game.c. Yang memiliki definisi struct dan enum yang digunakan di modul lain dan utilitas timer
+ */
 #ifndef _SCREEN_H
 #define _SCREEN_H
 
-#include "player.h"
+#include "game.h"
 #include "raylib.h"
 #include <stdbool.h>
+
+typedef struct {
+    char name[20];
+    int score;
+} Player;
 
 typedef struct
 {
@@ -86,6 +98,9 @@ typedef struct
   Font font;
   GameState *gameState;
 } Timer;
+
+
+
 
 void UpdateScreen(Screen *s, int w, int h);
 

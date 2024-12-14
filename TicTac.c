@@ -2,7 +2,7 @@
 #include "raylib.h"
 #include "game.h"
 #include "board.h"
-#include "player.h"
+#include "game.h"
 #include "menu.h"
 #include "leaderboard.h"
 #include <string.h>

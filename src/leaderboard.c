@@ -1,3 +1,10 @@
+/**
+ * leaderboard.c
+ * Author : Andi Putra Wijaya
+ * Created: 5 Desember 2024
+ * 
+ * Source code implementasi leaderboard.h. Yang digunakan untuk menulis/membaca leaderboard atau history dari sebuah file. 
+ */
 #include "leaderboard.h"
 #include <string.h>
 #include <stdio.h>
@@ -180,7 +187,6 @@ void WriteHistory(Leaderboard *l, History *h){
     }
     
     alloc[0] = (char)historyAmount;
-    long history = ftell(l->history);
     fwrite(alloc, sizeof(char), 1, l->history);
     fflush(l->history);
 

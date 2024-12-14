@@ -1,7 +1,14 @@
+/**
+ * leaderboard.h
+ * Author : Andi Putra Wijaya
+ * Created: 5 Desember 2024
+ * 
+ * Header file untuk leaderboard.c. Yang digunakan untuk menulis/membaca leaderboard atau history dari sebuah file. 
+ */
 #ifndef _LEADERBOARD_H_
 #define _LEADERBOARD_H_
 
-#include "player.h"
+#include "game.h"
 #include <stdio.h>
 #include <errno.h>
 #include <stdbool.h>
@@ -95,10 +102,13 @@ int __HistoryToBuffer(char *buffer, History h);
 // konversi dari bytes ke History.
 int __BufferToHistory(char *buffer, History *h);
 
-
+// Mencari lokasi untuk elo player tertentu. mengembalikan lokasi buffer menunjuk ke panjang dari nama. mengembalikan nilai -1 jika tidak ditemukan
 int __PlayerLocationCursor(Leaderboard *l, char *name, int len);
+// untuk debugging. Print Elo Player
 void __PrintPlayerElo(PlayerElo e);
+// untuk debugging. Print History
 void __PrintHistory(History h);
+// untuk debugging. Print Buffer dengan panjang tertentu
 void __PrintBuffer(char *buffer, int buffer_len);
 
 void TestHistory();
