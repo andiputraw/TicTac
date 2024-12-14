@@ -677,7 +677,7 @@ void PlayVsPlayer(Board *b, int index){
             }
         }
     }
-    if(b->turnCount >= b->board_len){
+    if(b->turnCount > b->board_len){
         if(b->gameState->p1.score ==b->gameState->p2.score){
           b->turn = NEITHER;
 
