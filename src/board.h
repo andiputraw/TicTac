@@ -68,6 +68,5 @@ void BackToMainMenu(Board *b);
 int __2Dto1D(int maxCol, int row, int col);
 void __1DTo2D(int index, int maxCol, int *row, int *col);
 bool __IsScoring(Board *b, int index);
-bool __IndexIsValid(int len, int index);
 
 #endif // _BOARD_H

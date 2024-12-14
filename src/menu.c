@@ -85,8 +85,14 @@ void UpdateMainMenu(MainMenu *mainMenu){
 }
 
 void MainMenuDraw(MainMenu mainMenu){
-    int title_font_size = mainMenu.screen->width*0.04;
-    DrawText("Main Menu",mainMenu.screen->width/2  - MeasureText("Main Menu",title_font_size)/2,mainMenu.screen->height/4, title_font_size, BLACK);
+    int title_font_size = mainMenu.screen->width*0.05;
+    const char* title = "Tic Tac Toe";
+    const char* author = "By : TCC Team";
+
+    Vector2 titlePos = (Vector2){.x = mainMenu.screen->width/2  - MeasureTextEx(mainMenu.playBtn.style.font,title,title_font_size,1).x/2, .y=mainMenu.screen->height/3.5};
+    Vector2 authorPos = (Vector2){.x = mainMenu.screen->width/2  - MeasureTextEx(mainMenu.playBtn.style.font,author,title_font_size/2,1).x/2, .y=mainMenu.screen->height/2.7};
+    DrawTextEx(mainMenu.playBtn.style.font, title,titlePos,title_font_size,1,BLACK);
+    DrawTextEx(mainMenu.playBtn.style.font, author,authorPos,title_font_size/2,1,BLACK);
     DrawButton(&mainMenu.playBtn);
     DrawButton(&mainMenu.historyBtn);
     DrawButton(&mainMenu.exitBtn);
