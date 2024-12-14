@@ -121,6 +121,7 @@ void UpdateBoard(Board *b)
     }
     if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_B)){
         __RecordResultToFile(b);
+        RestartBoard(b);
         BackToMainMenu(b);
     }
     
@@ -130,12 +131,15 @@ int __CalculateEloWin( int currElo, int botDiff) {
     // base increase = 20
     // formula ini harus nge-nerf hasil dari permainan jika
     // currElo = 300 jika easy, 600 jika medium. 900 jika hard.
-
-    return currElo  + (20 + (botDiff * 20)/ 1 + ((currElo / (botDiff * 300)) ));
+    int flattenFac = 1 + pow((currElo / (botDiff * 300)), 3 );
+    int baseReward = (20 * botDiff) ;
+    return currElo  + ( baseReward / flattenFac);
 }
 
 int __CalculateEloLose( int currElo, int botDiff) {
-    return currElo - (20 + (botDiff * 20) / ((botDiff * 300 /( currElo + 1))));
+    double flattenFac = (((double)botDiff*300.0 / ( (double)currElo + 1.0) ));
+    double basePenalty = (20 + (botDiff * 20));
+    return currElo - (basePenalty / flattenFac) ;
 }
 
 void __RecordResultToFile(Board *b) {
@@ -153,10 +157,12 @@ void __RecordResultToFile(Board *b) {
         }
         if(b->gameState->vsMode == VSBOT){
             if (GetPlayerElo(b->leaderboard, &playerElo, b->gameState->p1.name)){
-                if(b->gameState->p1.score != 0){
+                if(b->gameState->p1.score > b->gameState->p2.score){
                     playerElo.elo = __CalculateEloWin(playerElo.elo, b->gameState->botMode + 1);
-                }else {
+                }else if (b->gameState->p1.score < b->gameState->p2.score) {
                     playerElo.elo = __CalculateEloLose(playerElo.elo, b->gameState->botMode + 1);
+                }else {
+                    playerElo.elo -= 1;
                 }
             }else {
                 strcpy(&playerElo.name, b->gameState->p1.name);

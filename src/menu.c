@@ -309,15 +309,17 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu)
         menu->gameState->botMode = HARD;
     }
 
-    if(menu->classicModeBtn.isClicked){
-        menu->b->mode = BOARD_3_X_3;
-        menu->gameState->scene = GAMEPLAY;
-        menu->gameState->gameStatus = PLAYING;
-    }
-    if(menu->extendedModeBtn.isClicked){
-        menu->b->mode = BOARD_5_X_5;
-        menu->gameState->scene = GAMEPLAY;
-        menu->gameState->gameStatus = PLAYING;
+    if(menu->InputP1Name.valueLen > 0 && (menu->gameState->vsMode != VSPLAYER || (menu->gameState->vsMode == VSPLAYER && menu->InputP2Name.valueLen > 0))) {
+        if(menu->classicModeBtn.isClicked){
+            menu->b->mode = BOARD_3_X_3;
+            menu->gameState->scene = GAMEPLAY;
+            menu->gameState->gameStatus = PLAYING;
+        }
+        if(menu->extendedModeBtn.isClicked){
+            menu->b->mode = BOARD_5_X_5;
+            menu->gameState->scene = GAMEPLAY;
+            menu->gameState->gameStatus = PLAYING;
+        }
     }
     
 }
