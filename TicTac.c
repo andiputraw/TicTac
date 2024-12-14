@@ -56,7 +56,7 @@ int main(void)
 
     // menu initializing
     CreateMainMenu(&mainMenu, &s, &scene, font);
-    CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene, p1_container, p2_container, font);
+    CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene,&b, p1_container, p2_container, font);
     CreateLeaderboardMenu(&leaderBoardMenu, &gameState, &s, &scene, &leaderboard, font);
     CreateTimer(&timer,&gameState, font);
     // printf("HELLO WORLD");

@@ -186,6 +186,10 @@ void CreateModeSelectMenu(ModeSelectMenu *menu, GameState *gameState, Screen *sc
         .hardBotBtn = menu->hardBotBtn,
         .scene = scene,
         .gameState = gameState};
+        .gameState= gameState,
+        .b = b
+    };
+
 }
 
 void UpdateModeSelectMenu(ModeSelectMenu *menu)
@@ -203,12 +207,11 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu)
         buttons[i]->rect = rec;
         buttons[i]->style.fontSize = menu_font_size;
         UpdateButton(buttons[i]);
-        if (buttons[i]->isClicked)
-        {
-            *menu->scene = GAMEPLAY;
-            menu->gameState->gameStatus = PLAYING;
-            printf("%d", menu->gameState->gameStatus);
-        }
+        // if(buttons[i]->isClicked){
+        //     *menu->scene = GAMEPLAY;
+        //     menu->gameState->gameStatus = PLAYING;
+        //     printf("%d",menu->gameState->gameStatus);
+        // }
     }
 
     int input_width = menu->screen->width * 0.3;
@@ -303,6 +306,18 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu)
     {
         menu->gameState->botMode = HARD;
     }
+
+    if(menu->classicModeBtn.isClicked){
+        menu->b->mode = BOARD_3_X_3;
+        menu->gameState->scene = GAMEPLAY;
+        menu->gameState->gameStatus = PLAYING;
+    }
+    if(menu->extendedModeBtn.isClicked){
+        menu->b->mode = BOARD_5_X_5;
+        menu->gameState->scene = GAMEPLAY;
+        menu->gameState->gameStatus = PLAYING;
+    }
+    
 }
 
 void ModeSelectMenuDraw(ModeSelectMenu *selectMenu)

@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "board.h"
 #include "raylib.h"
+#include "math.h"
 #include <stdio.h>
 
 void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font)
@@ -10,7 +11,7 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
     b->screen = s;
     b->gameState = gameState;
     b->font = font;
-    b->turnCount = 0;
+    b->turnCount = 1;
     b->timer = timer;
 
     for (int i = 0; i < MAX_BOX_COUNT; i++)
@@ -22,9 +23,8 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
     case BOARD_3_X_3:
         b->board_len = 9;
         break;
-    case BOARD_PYRAMID:
-        break;
     case BOARD_5_X_5:
+        b->board_len = 25;
         break;
     default:
         assert("UNREACHABLE" || mode);
@@ -35,23 +35,51 @@ void UpdateBoard(Board *b)
 {
     int w = b->screen->width;
     int h = b->screen->height;
-    float s = (w * 0.1);
+    float s;
     float center_x = (w / 2) - (s / 2);
     float center_y = (h / 2) - (s / 2);
-    float left_upper_square_x = center_x - s;
-    float left_upper_square_y = center_y - s;
-    int offset = 5;
+    float left_upper_square_x;
+    float left_upper_square_y;
+    int offset;
     Rectangle rec;
     Vector2 mouse;
     int i = 0, j = 0;
     bool isThinking;
     int index;
-    for (i = 0; i < 3; i++)
+
+    switch (b->mode)
     {
-        for (j = 0; j < 3; j++)
+    case BOARD_3_X_3:
+        b->board_len = 9;
+        break;
+    case BOARD_5_X_5:
+        b->board_len = 25;
+        break;
+    default:
+        assert("UNREACHABLE" || b->mode);
+    }
+
+    if(b->mode==BOARD_3_X_3){
+        offset = 5;
+        s = (w * 0.1);
+        center_x = (w / 2) - (s / 2);
+        center_y = (h / 2) - (s / 2);
+        left_upper_square_x = center_x - s;
+        left_upper_square_y = center_y - s;
+    }else if(b->mode==BOARD_5_X_5){
+        offset = 3;
+        s = (w * 0.06);
+        left_upper_square_x = center_x/1.21 - s;
+        left_upper_square_y = center_y/1.5 - s;
+    }
+
+
+    for (i = 0; i < sqrt(b->board_len); i++)
+    {
+        for (j = 0; j < sqrt(b->board_len); j++)
         {
             rec = (Rectangle){left_upper_square_x + (i * s) + (offset * i), left_upper_square_y + (j * s) + (offset * j), s, s};
-            index = (j * 3) + i;
+            index = (j * sqrt(b->board_len)) + i;
             b->boxes[index].rec = rec;
             mouse = GetMousePosition();
             if (CheckCollisionPointRec(mouse, rec) && b->gameState->gameStatus == PLAYING)
@@ -81,9 +109,13 @@ void UpdateBoard(Board *b)
             }
         }
     }
-    if(IsKeyPressed(KEY_R)){
+    if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_R)){
         ResetBoard(b);
     }
+    if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_B)){
+        BackToMainMenu(b);
+    }
+    
 }
 
 void DrawBoard(Board *b)
@@ -93,7 +125,7 @@ void DrawBoard(Board *b)
     Vector2 center;
     Vector2 startLineLeft, endLineLeft;
     Vector2 startLineRight, endLineRight;
-    for (i = 0; i < 9; i++)
+    for (i = 0; i < b->board_len; i++)
     {
         box = b->boxes[i];
         if (box.isHover)
@@ -129,7 +161,7 @@ void DrawBoard(Board *b)
             assert("UNREACHABLE" || box.value);
             break;
         }
-        if(__IsWin(b,i)){
+        if(__IsScoring(b,i)){
             DrawLineEx(b->scoreLinePos.startPos, b->scoreLinePos.endPos, 8.0f,BLACK);
          }
     }
@@ -142,8 +174,26 @@ void DrawBoard(Board *b)
         Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name),25,1).x/2,.y=(b->screen->height/1.2)};
         DrawTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name), turnPos,25,1,BLUE);
     }
+    //Draw Score
+    if(b->mode == BOARD_5_X_5){
+        const char* scoreText1;
+        const char* scoreText2;
+        int fontSize = b->screen->width*0.035;
+        Vector2 pos = (Vector2){0,0};
+        Vector2 pos2 = (Vector2){0,b->screen->height/9};
+        if(b->gameState->vsMode == VSBOT){
+            scoreText1 = "Your Score: ";
+            scoreText2 = "Bot Score: ";
+        }else{
+            scoreText1 =TextFormat("%s(Circle) Score: ",b->gameState->p1.name);
+            scoreText2 =TextFormat("%s(Cross) Score: ",b->gameState->p2.name);
+        }
+        DrawTextEx(b->font, TextFormat("%s %d", scoreText1, b->gameState->p1.score),pos, fontSize,1,BLACK);
+        DrawTextEx(b->font, TextFormat("%s %d", scoreText2, b->gameState->p2.score),pos2,fontSize, 1,BLACK);
+    }
 
-    if(b->gameState->gameStatus == ENDED &&b->gameState->scene == GAMEPLAY ){
+
+    if(b->gameState->gameStatus == ENDED &&b->gameState->scene == GAMEPLAY){
         DrawGameOverScene(b);
     }
 }
@@ -162,7 +212,11 @@ void CreateBox(Box *box)
 
 int __2Dto1D(int maxCol, int row, int col)
 {
-    return (row * maxCol) + col;
+    if(row < 0 || col < 0 || col >= maxCol||row >=maxCol){
+        return 40;
+    }else{
+        return (row * maxCol) + col;
+    }
 }
 
 void __1DTo2D(int index, int maxCol, int *row, int *col)
@@ -174,102 +228,209 @@ void __1DTo2D(int index, int maxCol, int *row, int *col)
 //  6 (1D)
 //  Row = 6/3 (2)
 //  Col = 6%3 (0)
-bool __IsWin(Board *b, int index)
+bool __IsScoring(Board *b, int index)
 {
     int col;
     int row;
     int currVal = b->boxes[index].value;
-
-    if (b->mode == BOARD_3_X_3)
-    {
-        __1DTo2D(index, 3, &row, &col);
-        // Horizontal
-        if (
-            b->boxes[__2Dto1D(3, row, 0)].value == currVal &&
-            b->boxes[__2Dto1D(3, row, 1)].value == currVal &&
-            b->boxes[__2Dto1D(3, row, 2)].value == currVal)
+    int maxCol = sqrt(b->board_len);
+    __1DTo2D(index, maxCol, &row, &col);
+        /*----------- Horizontal ---------------*/
+    if (
+            (b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            (b->boxes[__2Dto1D(maxCol, row, col-1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol, row, col+1)].value == currVal))
         {
-            b->winCondition = HORIZONTAL;
+            // printf("horiz mid");
+            b->scoreCondition = HORIZONTAL_MID;
+            return true;
+        }else if((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            b->boxes[__2Dto1D(maxCol, row, col+1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol, row, col+2)].value == currVal)
+        {
+            // printf("%d %d\n", col+1,col+2);
+            // printf("horiz left");
+
+            b->scoreCondition = HORIZONTAL_LEFT;
+            return true;  
+        }else if((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            b->boxes[__2Dto1D(maxCol, row, col-1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol, row, col-2)].value == currVal)
+        {
+                b->scoreCondition = HORIZONTAL_RIGHT;
+                return true;
+   
+        }
+        /* -------- Vertical --------- */
+        if ((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            b->boxes[__2Dto1D(maxCol, row-1, col)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol, row+1, col)].value == currVal)
+        {
+            // printf("verti mid");
+
+            b->scoreCondition = VERTICAL_MID;
             return true;
         }
-        // Vertical
-        if (
-            b->boxes[__2Dto1D(3, 0, col)].value == currVal &&
-            b->boxes[__2Dto1D(3, 1, col)].value == currVal &&
-            b->boxes[__2Dto1D(3, 2, col)].value == currVal)
+        else if((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            b->boxes[__2Dto1D(maxCol, row+1, col)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol, row+2, col)].value == currVal)
         {
-            b->winCondition = VERTICAL;
+            // printf("verti top");
+
+            b->scoreCondition = VERTICAL_TOP;
             return true;
         }
-        // Diagonal top left
-        if ((col == 0 && row == 0) || (col == 2 && row == 2) || (col == 1 && row == 1))
+        else if((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            b->boxes[__2Dto1D(maxCol, row-1, col)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol, row-2, col)].value == currVal)
         {
-            if (
-                b->boxes[__2Dto1D(3,0,0)].value == currVal &&
-                b->boxes[__2Dto1D(3,1,1)].value == currVal &&
-                b->boxes[__2Dto1D(3,2,2)].value == currVal)
-            {
-                b->winCondition = DIAGONAL_TOP_LEFT;
-                return true;
-            }
+            // printf("verti bot");
+
+            b->scoreCondition = VERTICAL_BOT;
+            return true;
         }
-        //Diagonal top right
-        if ((col == 2 && row == 0) || (col == 0 && row == 2) || (col == 1 && row == 1))
+        /*-------- Diagonal Top Left to Bottom Right--------*/
+        if ((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            (b->boxes[__2Dto1D(maxCol,row+1,col+1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol,row-1,col-1)].value == currVal))
         {
-            if (
-                b->boxes[__2Dto1D(3, 0,2)].value == currVal &&
-                b->boxes[__2Dto1D(3, 1,1)].value == currVal &&
-                b->boxes[__2Dto1D(3, 2,0)].value == currVal)
-            {
-                b->winCondition = DIAGONAL_TOP_RIGHT;
+            // printf("dig top L mid");
+
+                b->scoreCondition = DIAGONAL_TOP_LEFT_MID;
                 return true;
-            }
         }
+        else if((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            (b->boxes[__2Dto1D(maxCol,row+1,col+1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol,row+2,col+2)].value == currVal))
+        {
+            // printf("dig top L beg");
 
-        
-        return false;
-    }
-    else if (b -> mode == BOARD_5_X_5){
-        // Cara cek garis diagonal.
+            b->scoreCondition = DIAGONAL_TOP_LEFT_BEGIN;
+            return true;
+        }
+        else if((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            b->boxes[__2Dto1D(maxCol,row-1,col-1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol,row-2,col-2)].value == currVal)
+        {
+            // printf("dig top L end");
 
-        // Jika kotak berada di kolom ke-1
-        //
-        // Cek ke atas, atau ke bawah, bisa dapet 2 kotak. 
-        // kalau ke atas bisa. berarti arahnya BOT_LEFT to TOP RIGHT
-        // kalau ke bawah bisa. berarti arahnya TOP_LEFT to BOT RIGHT
-        // misal. row 2. bisa ke atas row 0 dan row 1. bisa ke bawah, row 4, row 5. bisa dua duanya
-        //        row 4. bisa ke atas row 3 dan row 2. Hanya bisa ke bawah row 1. hanya bisa BOT_LEFT to TOP_RIGHT
+            b->scoreCondition = DIAGONAL_TOP_LEFT_END;
+            return true;
+        }
+        /*-------- Diagonal Top Right to Bottom Left--------*/
+        if ((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            (b->boxes[__2Dto1D(maxCol,row-1,col+1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol,row+1,col-1)].value == currVal))
+        {
 
-        // Kondisi dibalik, jika kotak berada di kolom ke-4.
-    }
-    else
-    {
-        assert("UNREACHABLE" || false);
-    }
+            // printf("diagonal top right mid");
+
+                b->scoreCondition = DIAGONAL_TOP_RIGHT_MID;
+                return true;
+        }
+        else if((b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            (b->boxes[__2Dto1D(maxCol,row+1,col-1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol,row+2,col-2)].value == currVal))
+        {
+            // printf("diagonal top right begin");
+
+            b->scoreCondition = DIAGONAL_TOP_RIGHT_BEGIN;
+            return true;
+        }
+        else if(
+            (b->boxes[__2Dto1D(maxCol, row, col)].value == currVal)&&
+            b->boxes[__2Dto1D(maxCol,row-1,col+1)].value == currVal &&
+            b->boxes[__2Dto1D(maxCol,row-2,col+2)].value == currVal)
+        {
+            // printf("diagonal top right end");
+            b->scoreCondition = DIAGONAL_TOP_RIGHT_END;
+            return true;
+        }
+    // }
+    // else
+    // {
+    //     assert("UNREACHABLE" || false);
+    // }
+    return false;
 
 }
 
 void SetScoreLine(Board *b, int index){
-    int row,col;
-    __1DTo2D(index,3, &row, &col);
-    if(b->winCondition == VERTICAL){
-        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, 0, col)].rec.x + b->boxes[__2Dto1D(3, 0, col)].rec.width/2,.y= b->boxes[__2Dto1D(3, 0, col)].rec.y};
-        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, 2, col)].rec.x + b->boxes[__2Dto1D(3, 0, col)].rec.width/2,.y= b->boxes[__2Dto1D(3, 2, col)].rec.y + b->boxes[__2Dto1D(3, 2, col)].rec.height};
-    }else if(b->winCondition == HORIZONTAL){
-        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, row, 0)].rec.x, .y = b->boxes[__2Dto1D(3, row, 0)].rec.y+b->boxes[__2Dto1D(3, row, 0)].rec.height/2};
-        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, row, 2)].rec.x +  b->boxes[__2Dto1D(3, row, 2)].rec.width, .y = b->boxes[__2Dto1D(3, row, 2)].rec.y+b->boxes[__2Dto1D(3, row, 0)].rec.height/2};
-    }else if(b->winCondition == DIAGONAL_TOP_LEFT){
-        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, 0, 0)].rec.x, .y=b->boxes[__2Dto1D(3, 0, 0)].rec.y};
-        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, 2, 2)].rec.x + b->boxes[__2Dto1D(3, 2, 2)].rec.width, .y = b->boxes[__2Dto1D(3, 2, 2)].rec.y +  b->boxes[__2Dto1D(3, 2, 2)].rec.width };
-    }else if(b->winCondition == DIAGONAL_TOP_RIGHT){
-        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[__2Dto1D(3, 0, 2)].rec.x+b->boxes[__2Dto1D(3, 0, 2)].rec.width, .y=b->boxes[__2Dto1D(3, 0, 2)].rec.y};
-        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[__2Dto1D(3, 2, 0)].rec.x, .y = b->boxes[__2Dto1D(3, 2, 2)].rec.y + b->boxes[__2Dto1D(3, 2, 2)].rec.height };
-
+    int row,col, startIndex, endIndex, maxCol;
+    maxCol = sqrt(b->board_len);
+    __1DTo2D(index,maxCol, &row, &col);
+    switch (b->scoreCondition)
+    {
+    case VERTICAL_MID:
+        startIndex = __2Dto1D(maxCol, row-1, col);
+        endIndex = __2Dto1D(maxCol, row+1, col);
+        break;
+    case VERTICAL_TOP:
+        startIndex = __2Dto1D(maxCol, row, col);
+        endIndex = __2Dto1D(maxCol, row+2, col);
+        break;
+    case VERTICAL_BOT:
+        startIndex = __2Dto1D(maxCol, row-2, col);
+        endIndex = __2Dto1D(maxCol, row, col);
+        break;
+    case HORIZONTAL_MID:
+        startIndex = __2Dto1D(maxCol, row, col-1);
+        endIndex = __2Dto1D(maxCol, row, col+1);
+        break;
+    case HORIZONTAL_LEFT:
+        startIndex = __2Dto1D(maxCol, row, col);
+        endIndex = __2Dto1D(maxCol, row, col+2);
+        break;
+    case HORIZONTAL_RIGHT:
+        startIndex = __2Dto1D(maxCol, row, col-2);
+        endIndex = __2Dto1D(maxCol, row, col);
+        break;
+    case DIAGONAL_TOP_LEFT_MID:
+        startIndex = __2Dto1D(maxCol, row-1, col-1);
+        endIndex = __2Dto1D(maxCol, row+1, col+1);
+        break;
+    case DIAGONAL_TOP_LEFT_BEGIN:
+        startIndex = __2Dto1D(maxCol, row, col);
+        endIndex = __2Dto1D(maxCol, row+2, col+2);
+        break;
+    case DIAGONAL_TOP_LEFT_END:
+        startIndex = __2Dto1D(maxCol, row-2, col-2);
+        endIndex = __2Dto1D(maxCol, row, col);
+        break;
+    case DIAGONAL_TOP_RIGHT_MID:
+        startIndex = __2Dto1D(maxCol, row-1, col+1);
+        endIndex = __2Dto1D(maxCol, row+1, col-1);
+        break;
+    case DIAGONAL_TOP_RIGHT_BEGIN:
+        startIndex = __2Dto1D(maxCol, row, col);
+        endIndex = __2Dto1D(maxCol, row+2, col-2);
+        break;
+    case DIAGONAL_TOP_RIGHT_END:
+        startIndex = __2Dto1D(maxCol, row-2, col+2);
+        endIndex = __2Dto1D(maxCol, row, col);
+        break;
+    default:
+        break;
     }
+    // printf("start: %d end:%d\n",startIndex, endIndex);
+    if(b->scoreCondition==VERTICAL_MID||b->scoreCondition==VERTICAL_TOP||b->scoreCondition==VERTICAL_BOT){
+        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x + b->boxes[startIndex].rec.width/2,.y= b->boxes[startIndex].rec.y};
+        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x + b->boxes[endIndex].rec.width/2,.y= b->boxes[endIndex].rec.y + b->boxes[endIndex].rec.height};
+    }else if(b->scoreCondition==HORIZONTAL_MID||b->scoreCondition==HORIZONTAL_LEFT||b->scoreCondition==HORIZONTAL_RIGHT){
+        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x, .y = b->boxes[startIndex].rec.y+b->boxes[startIndex].rec.height/2};
+        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x +  b->boxes[endIndex].rec.width, .y = b->boxes[endIndex].rec.y+b->boxes[endIndex].rec.height/2};
+    }else if(b->scoreCondition==DIAGONAL_TOP_LEFT_MID||b->scoreCondition==DIAGONAL_TOP_LEFT_BEGIN||b->scoreCondition==DIAGONAL_TOP_LEFT_END){
+        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x, .y=b->boxes[startIndex].rec.y};
+        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x + b->boxes[startIndex].rec.width, .y = b->boxes[endIndex].rec.y +  b->boxes[endIndex].rec.width };
+    }else if(b->scoreCondition==DIAGONAL_TOP_RIGHT_MID||b->scoreCondition==DIAGONAL_TOP_RIGHT_BEGIN||b->scoreCondition==DIAGONAL_TOP_RIGHT_END){
+         b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x+b->boxes[startIndex].rec.width, .y=b->boxes[startIndex].rec.y};
+         b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x, .y = b->boxes[endIndex].rec.y + b->boxes[endIndex].rec.height };
+    }
+
 }
 
 void ResetBoard(Board *b){
-    for(int i = 0; i < 9; i++){
+    for(int i = 0; i < b->board_len; i++){
          b->boxes[i].value = BOX_EMPTY;
     }
     b->scoreLinePos.startPos = (Vector2) {0,0};
@@ -277,6 +438,20 @@ void ResetBoard(Board *b){
     b->turn = FIRST;
     b->gameState->gameStatus = PLAYING;
     b->turnCount = 0;
+    b->gameState->p1.score = 0;
+    b->gameState->p2.score = 0;
+}
+void BackToMainMenu(Board *b){
+    for(int i = 0; i < b->board_len; i++){
+         b->boxes[i].value = BOX_EMPTY;
+    }
+    b->scoreLinePos.startPos = (Vector2) {0,0};
+    b->scoreLinePos.endPos = (Vector2) {0,0};
+    b->turn = FIRST;
+    b->turnCount = 0;
+    b->gameState->p1.score = 0;
+    b->gameState->p2.score = 0;
+    b->gameState->scene = MAIN_MENU;
 }
 
 void DrawGameOverScene(Board *b){
@@ -287,14 +462,24 @@ void DrawGameOverScene(Board *b){
     marginTop = b->screen->height * 0.05;
     fontSize = b->screen->height * 0.1;
     gameOverTxt = "GAME OVER";
-    if(b->turn == SECOND){
-        winnerTxt = TextFormat("%s WIN!",b->gameState->p1.name);
-    }else if(b->turn == FIRST){
-        winnerTxt = TextFormat("%s WIN!",b->gameState->p2.name);
-    }else if(b->turn == NEITHER){
-        winnerTxt = "DRAW!";
+    if(b->gameState->vsMode == VSPLAYER){
+        if(b->turn == SECOND){
+            winnerTxt = TextFormat("%s(Circle) WIN!",b->gameState->p1.name);
+        }else if(b->turn == FIRST){
+            winnerTxt = TextFormat("%s(Cross) WIN!",b->gameState->p2.name);
+        }else if(b->turn == NEITHER){
+            winnerTxt = "DRAW!";
+        }
+    }else{
+        if(b->turn == FIRST){
+            winnerTxt = "YOU WIN!";
+        }else if(b->turn == SECOND){
+            winnerTxt = "YOU LOSE!";
+        }else if(b->turn == NEITHER){
+            winnerTxt = "DRAW!";
+        }
     }
-    optionTxt = "Press 'r' to restart"; 
+    optionTxt = "Press 'r' to restart or 'b' to main menu"; 
 
     DrawRectangleRec(rec, Fade(WHITE, 0.8));
     DrawTextEx(b->font,gameOverTxt, (Vector2){b->screen->width/2 - MeasureTextEx(b->font, gameOverTxt, fontSize,1).x/2, b->screen->height/3},fontSize, 1, DARKGRAY);
@@ -305,46 +490,79 @@ void DrawGameOverScene(Board *b){
 
 int CalculateBotIndex(Board *b, int index){
     if(b->gameState->botMode==EASY){
-        printf("EASY DAYO");
         return CalculateEasyBot(b);
     }else if(b->gameState->botMode ==MEDIUM){
-        printf("MEDIUM DAYO");
         return CalculateMediumBot(b,index);
     }else{
-        printf("HARD DAYO");
         return CalculateHardBot(b,index);
     }
 }
 
 void PlayVsBot(Board *b, int index){
     int botIndex;
-    b->turnCount++;
-    printf("%d", b->turnCount);
     b->boxes[index].value = BOX_O;
-    b->turn = SECOND;
+    printf("%d\n", b->turnCount);
+    if (__IsScoring(b, index))
+      {
+        SetScoreLine(b,index);
+          if(b->mode == BOARD_3_X_3){
+            b->turnCount = 0;
+            b->gameState->gameStatus = ENDED;
+          }else if(b->mode == BOARD_5_X_5){
+            b->gameState->p1.score++;
+            if(b->gameState->p1.score >= 5){
+                    b->turnCount = 0;
+                b->gameState->gameStatus = ENDED;
+            }else{
+                b->turn = SECOND;
+                b->turnCount++;
+            }
+          }
+      }else{
+        b->turn = SECOND;
+        b->turnCount++;
+    }
     if (b->turn == SECOND)
     {
         botIndex = CalculateBotIndex(b, index);
-        if(botIndex >= 0){
+        if(botIndex >= 0 && botIndex <=b->board_len){
             b->boxes[botIndex].value = BOX_X;
+            if(__IsScoring(b, botIndex)){
+                SetScoreLine(b,botIndex);
+                if(b->mode == BOARD_3_X_3){
+                    b->turnCount = 0;
+                    b->gameState->gameStatus = ENDED;
+                }
+                else if (b->mode == BOARD_5_X_5)
+                {
+                    b->gameState->p2.score++;
+                    if(b->gameState->p2.score >= 5){
+                        b->turnCount = 0;
+                        b->gameState->gameStatus = ENDED;
+                    }else{
+                        b->turn = FIRST;
+                        b->turnCount++;
+                    }
+                }
+            }else{
+                b->turn = FIRST;
+                b->turnCount++;
+            }
         }
-        b->turn = FIRST;
-        b->turnCount++;
       }
-      if (__IsWin(b, index))
-      {
-          b->turnCount = 0;
-          SetScoreLine(b,index);
-          b->gameState->gameStatus = ENDED;
-      }else if(__IsWin(b, botIndex)){
-          b->turnCount = 0;
-          SetScoreLine(b,botIndex);
-          b->gameState->gameStatus = ENDED;
-      }else if(b->turnCount >= b->board_len){
-          b->turnCount = 0;
+    if(b->turnCount > b->board_len){
+        if(b->gameState->p1.score ==b->gameState->p2.score){
           b->turn = NEITHER;
+
+        }else if(b->gameState->p1.score > b->gameState->p2.score){
+            b->turn =FIRST;
+
+        }else if(b->gameState->p1.score < b->gameState->p2.score){
+            b->turn =SECOND;
+        }
+          b->turnCount = 0;
           b->gameState->gameStatus = ENDED;
-      }
+    }
 }
 
 void PlayVsPlayer(Board *b, int index){
@@ -360,11 +578,25 @@ void PlayVsPlayer(Board *b, int index){
         b->boxes[index].value = BOX_X;
         b->turn = FIRST;
     }
-    if (__IsWin(b, index))
+    if (__IsScoring(b, index))
     {
         b->turnCount = 0;
         SetScoreLine(b,index);
-        b->gameState->gameStatus = ENDED;
+        if(b->mode == BOARD_3_X_3){
+            b->gameState->gameStatus = ENDED;
+        }else if(b->mode == BOARD_5_X_5){
+            if(b->turn == SECOND){
+                b->gameState->p1.score++;
+                if(b->gameState->p1.score >= 5){
+                    b->gameState->gameStatus = ENDED;
+                }
+            }else{
+                b->gameState->p2.score++;
+                if(b->gameState->p2.score >= 5){
+                    b->gameState->gameStatus = ENDED;
+                }
+            }
+        }
     }else if(b->turnCount >= b->board_len){
         b->turnCount = 0;
         b->turn = NEITHER;
@@ -375,14 +607,13 @@ void PlayVsPlayer(Board *b, int index){
 int CalculateEasyBot(Board *b){
     int index;
     for(int i = 0; i <= b->board_len; i++){
-        index = GetRandomValue(0,8);
+        index = GetRandomValue(0,b->board_len-1);
         if(b->boxes[index].value == BOX_EMPTY){
             return index;
         }
     }
     return -1;
 }
-
 int CalculateMediumBot(Board *b, int index){
     int randIndex;
     // Cek apakah player akan menang
@@ -391,7 +622,7 @@ int CalculateMediumBot(Board *b, int index){
         {
             if(b->boxes[i].value==BOX_EMPTY){
                 b->boxes[i].value = BOX_O;
-                if(__IsWin(b,i)){
+                if(__IsScoring(b,i)){
                     b->boxes[i].value = BOX_EMPTY;
                     return i;
                 }
@@ -401,7 +632,7 @@ int CalculateMediumBot(Board *b, int index){
 
     }else{
         for(int i = 0; i < b->board_len; i++){
-            randIndex = GetRandomValue(0,8);
+            randIndex = GetRandomValue(0,b->board_len);
             if(b->boxes[randIndex].value == BOX_EMPTY){
                 return randIndex;
             }
@@ -410,7 +641,6 @@ int CalculateMediumBot(Board *b, int index){
     }
     return -1;
 }
-
 int CalculateHardBot(Board *b, int index){
     int randValue;
     if(b->turnCount>1){
@@ -418,8 +648,7 @@ int CalculateHardBot(Board *b, int index){
         for(int i = 0; i <= b->board_len; i++){
             if(b->boxes[i].value == BOX_EMPTY){
                     b->boxes[i].value = BOX_X;
-                    if(__IsWin(b,i)){
-                        b->boxes[i].value = BOX_EMPTY;
+                    if(__IsScoring(b,i)){
                         return i;
                     }
                     b->boxes[i].value = BOX_EMPTY;
@@ -431,7 +660,7 @@ int CalculateHardBot(Board *b, int index){
         {           
             if(b->boxes[i].value == BOX_EMPTY){
                 b->boxes[i].value = BOX_O;
-                if(__IsWin(b,i)){
+                if(__IsScoring(b,i)){
                     b->boxes[i].value = BOX_EMPTY;
                     return i;
                 }
@@ -443,7 +672,7 @@ int CalculateHardBot(Board *b, int index){
         for (int i = 0; i < b->board_len; i++)
         {
             // Cek corner/edge/center
-            randValue = GetRandomValue(0,8);
+            randValue = GetRandomValue(0,10);
                 if(b->boxes[i].value == BOX_EMPTY){
                 if(i%2==0){
                     if(randValue > 5){
