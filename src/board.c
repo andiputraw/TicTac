@@ -11,7 +11,7 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
     b->screen = s;
     b->gameState = gameState;
     b->font = font;
-    b->turnCount = 1;
+    b->turnCount = 0;
     b->timer = timer;
     b->lineCount = 0;
 
@@ -566,7 +566,7 @@ void PlayVsBot(Board *b, int index){
             }
         }
       }
-    if(b->turnCount > b->board_len){
+    if(b->turnCount >= b->board_len){
         if(b->gameState->p1.score ==b->gameState->p2.score){
           b->turn = NEITHER;
 
@@ -622,7 +622,7 @@ void PlayVsPlayer(Board *b, int index){
             }
         }
     }
-    if(b->turnCount > b->board_len){
+    if(b->turnCount >= b->board_len){
         if(b->gameState->p1.score ==b->gameState->p2.score){
           b->turn = NEITHER;
 
