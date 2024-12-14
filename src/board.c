@@ -517,8 +517,8 @@ void PlayVsBot(Board *b, int index){
     printf("%d\n", b->turnCount);
     if (__IsScoring(b, index))
       {
-        b->gameState->p1.score++;
         SetScoreLine(b,index);
+        b->gameState->p1.score++;
           if(b->mode == BOARD_3_X_3){
             b->turnCount = 0;
             b->gameState->gameStatus = ENDED;
@@ -542,7 +542,8 @@ void PlayVsBot(Board *b, int index){
         if(botIndex >= 0 && botIndex <=b->board_len){
             b->boxes[botIndex].value = BOX_X;
             if(__IsScoring(b, botIndex)){
-                b->gameState->p1.score++;
+                b->gameState->p2.score++;
+                b->lineCount++;
                 SetScoreLine(b,botIndex);
                 if(b->mode == BOARD_3_X_3){
                     b->turnCount = 0;
@@ -601,6 +602,7 @@ void PlayVsPlayer(Board *b, int index){
                 b->gameState->p1.score++;
             }else{
                 b->gameState->p2.score++;
+
             }
             b->turnCount = 0;
             b->gameState->gameStatus = ENDED;

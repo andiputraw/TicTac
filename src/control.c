@@ -105,7 +105,7 @@ void DrawInputText(InputText *this){
     int textYPos = this->rect.y + (this->rect.height / 4);
     Vector2 textPos = {textXPos, textYPos};
     Color focusColor = __DarkenColor(this->style.bgColor, 0.5);
-
+    
     if(this->isFocus){
         DrawRectangleRec(this->rect, focusColor);
         DrawRectangleLinesEx(this->rect, 2, BLACK);

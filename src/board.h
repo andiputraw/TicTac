@@ -56,7 +56,6 @@ void RestartBoard(Board*b);
 void CreateBox(Box *box);
 
 void SetScoreLine(Board *b,int index);
-void UpdateLine(Board*b);
 void DrawGameOverScene(Board *b);
 void PlayVsBot(Board *b, int index);
 int CalculateBotIndex(Board *b, int index);
