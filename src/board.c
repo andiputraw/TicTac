@@ -580,27 +580,38 @@ void PlayVsPlayer(Board *b, int index){
     }
     if (__IsScoring(b, index))
     {
-        b->turnCount = 0;
         SetScoreLine(b,index);
         if(b->mode == BOARD_3_X_3){
+            b->turnCount = 0;
             b->gameState->gameStatus = ENDED;
         }else if(b->mode == BOARD_5_X_5){
             if(b->turn == SECOND){
                 b->gameState->p1.score++;
                 if(b->gameState->p1.score >= 5){
+                    b->turnCount = 0;
                     b->gameState->gameStatus = ENDED;
                 }
             }else{
                 b->gameState->p2.score++;
                 if(b->gameState->p2.score >= 5){
+                    b->turnCount = 0;
                     b->gameState->gameStatus = ENDED;
                 }
             }
         }
-    }else if(b->turnCount >= b->board_len){
-        b->turnCount = 0;
-        b->turn = NEITHER;
-        b->gameState->gameStatus = ENDED;
+    }
+    if(b->turnCount >= b->board_len){
+        if(b->gameState->p1.score ==b->gameState->p2.score){
+          b->turn = NEITHER;
+
+        }else if(b->gameState->p1.score > b->gameState->p2.score){
+            b->turn =SECOND;
+
+        }else if(b->gameState->p1.score < b->gameState->p2.score){
+            b->turn =FIRST;
+        }
+          b->turnCount = 0;
+          b->gameState->gameStatus = ENDED;
     }
 }
 
