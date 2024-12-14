@@ -38,7 +38,9 @@ typedef enum{
   VSBOT = 0,
   VSPLAYER
 } VsMode;
-
+// WARNING:
+// Jangan update ini sembarangan. ada kemungkinan merusak fitur berikut
+// __CalculateEloWin
 typedef enum{
   EASY,
   MEDIUM,

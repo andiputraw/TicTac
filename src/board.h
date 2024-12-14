@@ -2,6 +2,7 @@
 #include "game.h"
 #include "player.h"
 #include "raylib.h"
+#include "leaderboard.h"
 
 #ifndef _BOARD_H
 #define _BOARD_H
@@ -45,11 +46,13 @@ typedef struct {
     Font font;
     int turnCount;
     Timer *timer;
+    Leaderboard *leaderboard;
+    bool isResultWritten;
 } Board;
 
 
 
-void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font);
+void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font, Leaderboard *leaderboard);
 void DrawBoard(Board *b);
 void UpdateBoard(Board *b);
 void RestartBoard(Board*b);
@@ -69,5 +72,6 @@ int __2Dto1D(int maxCol, int row, int col);
 void __1DTo2D(int index, int maxCol, int *row, int *col);
 bool __IsScoring(Board *b, int index);
 bool __IndexIsValid(int len, int index);
+void __RecordResultToFile(Board *b);
 
 #endif // _BOARD_H

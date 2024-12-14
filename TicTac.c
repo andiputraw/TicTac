@@ -65,7 +65,7 @@ int main(void)
 
     SetTargetFPS(24);
 
-    CreateBoard(&b,&gameState, BOARD_3_X_3, &s,&timer, font);
+    CreateBoard(&b,&gameState, BOARD_3_X_3, &s,&timer, font, &leaderboard);
     b.turn = FIRST;
     gameState.scene = MAIN_MENU;
     while (!WindowShouldClose())

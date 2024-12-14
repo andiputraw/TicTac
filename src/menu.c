@@ -455,8 +455,16 @@ void UpdateLeaderboardMenu(LeaderboardMenu *menu)
 
         if (history_len > 5)
         {
-            menu->len = 5;
             offset = history_len - ((menu->page + 1) * 5);
+            
+            // cek offset negatif. berarti sisa buffernya bukan perkalian 5
+            if(offset < 0){
+                // karena offset negatif. kita tambahkan 5 agar tau panajng sisa dari buffer nya berapa.
+                menu->len = 5  + offset ;
+                offset = 0;
+            }else {
+                menu->len = 5;
+            }
         }
         else
         {
@@ -633,6 +641,12 @@ void DrawLeaderboardMenu(LeaderboardMenu *menu)
             {
                 // loop dari belakang. tidak perlu i - 1 karena i sudah loop dari 1 - 5
                 int index = (5 - i);
+                if(menu->len < 5){
+                    index = (menu->len - i);
+                    if(i > menu->len + 1){
+                        continue;
+                    }
+                }
                 char gamemode[10] = "Classic";
                 Color win_color = GetColor(0x9EDF9CFF);
                 Color draw_color = GetColor(0xFFE31AFF);

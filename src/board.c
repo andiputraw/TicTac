@@ -4,8 +4,9 @@
 #include "raylib.h"
 #include "math.h"
 #include <stdio.h>
+#include <string.h>
 
-void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font)
+void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font, Leaderboard *leaderboard)
 {
     b->mode = mode;
     b->screen = s;
@@ -14,6 +15,8 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
     b->turnCount = 1;
     b->timer = timer;
     b->lineCount = 0;
+    b->leaderboard = leaderboard;
+    b->isResultWritten = false;
 
     for (int i = 0; i < MAX_BOX_COUNT; i++)
     {
@@ -47,6 +50,7 @@ void UpdateBoard(Board *b)
     int i = 0, j = 0;
     bool isThinking;
     int index;
+
 
     switch (b->mode)
     {
@@ -111,11 +115,56 @@ void UpdateBoard(Board *b)
         }
     }
     b->lineCount = b->gameState->p1.score + b->gameState->p2.score;
-    if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_R)){
+    if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_R)){ 
+        __RecordResultToFile(b);
         RestartBoard(b);
     }
     if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_B)){
+        __RecordResultToFile(b);
         BackToMainMenu(b);
+    }
+    
+}
+
+int __CalculateEloWin( int currElo, int botDiff) {
+    // base increase = 20
+    // formula ini harus nge-nerf hasil dari permainan jika
+    // currElo = 300 jika easy, 600 jika medium. 900 jika hard.
+
+    return currElo  + (20 + (botDiff * 20)/ 1 + ((currElo / (botDiff * 300)) ));
+}
+
+int __CalculateEloLose( int currElo, int botDiff) {
+    return currElo - (20 + (botDiff * 20) / ((botDiff * 300 /( currElo + 1))));
+}
+
+void __RecordResultToFile(Board *b) {
+    History history;
+    PlayerElo playerElo;
+    if(!b->isResultWritten){
+        if(b->gameState->vsMode == VSPLAYER){
+            memcpy(&history.p1, &b->gameState->p1, sizeof(Player));
+            memcpy(&history.p2, &b->gameState->p2, sizeof(Player));
+            history.game_mode = b->mode;
+            for(int i = 0; i < 25; i++){
+                history.BoardState[i] = b->boxes[i].value;
+            }
+            WriteHistory(b->leaderboard, &history);
+        }
+        if(b->gameState->vsMode == VSBOT){
+            if (GetPlayerElo(b->leaderboard, &playerElo, b->gameState->p1.name)){
+                if(b->gameState->p1.score != 0){
+                    playerElo.elo = __CalculateEloWin(playerElo.elo, b->gameState->botMode + 1);
+                }else {
+                    playerElo.elo = __CalculateEloLose(playerElo.elo, b->gameState->botMode + 1);
+                }
+            }else {
+                strcpy(&playerElo.name, b->gameState->p1.name);
+                playerElo.elo = 100;
+            }
+            WritePlayerElo(b->leaderboard, &playerElo);
+        }
+        b->isResultWritten = true;
     }
     
 }
@@ -450,6 +499,7 @@ void RestartBoard(Board *b){
     b->gameState->p1.score = 0;
     b->gameState->p2.score = 0;
     b->lineCount = 0;
+    b->isResultWritten = false;
 }
 void BackToMainMenu(Board *b){
     for(int i = 0; i < b->board_len; i++){

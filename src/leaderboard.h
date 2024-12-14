@@ -75,7 +75,7 @@ bool ReadHistory(Leaderboard *l, History *h, int len, int offset);
 // Mengupdate elo player dengan nama yang sama, jika nama tidak ditemukan, akan dibuat yang baru.
 void WritePlayerElo(Leaderboard *l, PlayerElo *p);
 
-// ambil player elo berdasarkan nama
+// ambil player elo berdasarkan nama. Mengembalikan true jika ditemukan, dan false jika tidak ditemukan.
 bool GetPlayerElo(Leaderboard *l, PlayerElo *p, char * name);
 
 // Ambil panjang seluruh history
@@ -85,10 +85,14 @@ int GetHistoryLen(Leaderboard *l);
 // *p = array dari sebuah PlayerElo. panjangnya harus paling tidak 5.
 bool ReadTop5Player(Leaderboard *l, PlayerElo *p);
 
+// konversi dari PlayerElo ke bytes.
 int PlayerEloToBuffer(char *buffer, PlayerElo h);
+// konversi dari bytes ke Player Elo.
 int BufferToPlayerElo(char *buffer, PlayerElo *h);
 
+// konversi dari History ke bytes.
 int HistoryToBuffer(char *buffer, History h);
+// konversi dari bytes ke History.
 int BufferToHistory(char *buffer, History *h);
 
 void TestHistory();
