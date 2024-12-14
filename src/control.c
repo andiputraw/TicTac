@@ -1,3 +1,10 @@
+/**
+ * control.c
+ * Author : Andi Putra Wijaya
+ * Created: 30 November 2024
+ * 
+ * Source code implementasi control.h. Yang memiliki definisi untuk pembuatan Button dan InputText sebagai ui control. 
+ */
 #include "control.h"
 #include <raylib.h>
 #include "string.h"
@@ -13,11 +20,11 @@ ButtonStyle CreateButtonStyle(Color bgColor, Color textColor, Font font, int fon
 }
 
 void CreateButton(Button *btn, Rectangle rec, char text[20], ButtonStyle style){
-    btn->rect = rec;
-    strncpy(btn->text, text, 20);
-    btn->isClicked = false;
-    btn->isHover = false;
-    btn->style = style;
+        btn->rect = rec;
+        strncpy(btn->text, text, 20);
+        btn->isClicked = false;
+        btn->isHover = false;
+        btn->style = style;
 }
 
 void UpdateButton(Button *this) {

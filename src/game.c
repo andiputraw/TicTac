@@ -1,3 +1,11 @@
+/**
+ * game.c
+ * Author : Andi Putra Wijaya & Maulana Ishak
+ * Created: 15 November 2024
+ * 
+ * Source code implementasi game.h. Yang memiliki definisi struct dan enum yang digunakan di modul lain dan utilitas timer
+ */
+
 #include "game.h"
 #include "raylib.h"
 

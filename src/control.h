@@ -1,3 +1,10 @@
+/**
+ * control.h
+ * Author : Andi Putra Wijaya & Maulana Ishak
+ * Created: 30 November 2024
+ * 
+ * Header file untuk control.c. Yang memiliki definisi untuk pembuatan Button dan InputText sebagai ui control. 
+ */
 #ifndef CONTROL_H
 #define CONTROL_H
 

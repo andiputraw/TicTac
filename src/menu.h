@@ -1,3 +1,10 @@
+/**
+ * menu.h
+ * Author : Andi Putra Wijaya & Maulana Ishak
+ * Created: 30 November 2024
+ * 
+ * Header file untuk menu.c. Yang digunakan untuk mengupdate tampilan main menu, mode selection menu dan leaderboard menu.
+ */
 #ifndef MENU_H
 #define MENU_H
 
@@ -39,6 +46,8 @@ typedef enum {
 typedef struct{
     Button nextBtn;
     Button backBtn;
+    Button nextHistory;
+    Button prevHistory;
 
     LeaderboardMenuScene menuScene;
     Screen *screen;
@@ -46,6 +55,12 @@ typedef struct{
     GameState *gameState;
     Leaderboard *leaderboard;
     Font font;
+    bool isLeaderboardUpdated ;
+    PlayerElo Top5Leaderboard[5];
+    int page;
+    int len;
+    int max_page;
+    History CurrentlyShowedHistory[5];
 } LeaderboardMenu;
 
 void CreateMainMenu(MainMenu *mainmenu, Screen *screen, Scene *scene, Font font);
@@ -60,8 +75,11 @@ void CreateLeaderboardMenu(LeaderboardMenu *menu, GameState *gameState, Screen *
 void UpdateLeaderboardMenu(LeaderboardMenu *menu);
 void DrawLeaderboardMenu(LeaderboardMenu *menu);
 
-void CrateHistoryMenu();
-void UpdateHistoryMenu();
-void DrawHistoryMenu();
+ButtonStyle __BetterMenuButtonStyle(Font font, Screen screen);
+int __ResponsiveFontSize(Screen screen, int min, int mid, int max);
+int __CalculateMenuButtonFontSize(Screen screen);
+Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_height, int btn_width, int margin_r, int len, float h_loc);
+InputTextStyle __MainMenuInputTextStyle(Font font, int fontSize);
+ButtonStyle __MainMenuButtonStyle(Font font, int fontSize);
 
 #endif //! MENU_H

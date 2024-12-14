@@ -1,11 +1,20 @@
+/**
+ * board.c
+ * Author : Andi Putra Wijaya & Maulana Ishak
+ * Created: 15 November 2024
+ * 
+ * Source code implementasi board.h. Yang digunakan untuk menampilkan papan permainan Tic Tac Toe beserta User Interfacenya
+ */
+
 #include <stdlib.h>
 #include <assert.h>
 #include "board.h"
 #include "raylib.h"
 #include "math.h"
 #include <stdio.h>
+#include <string.h>
 
-void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font)
+void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font, Leaderboard *leaderboard)
 {
     b->mode = mode;
     b->screen = s;
@@ -14,6 +23,8 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
     b->turnCount = 0;
     b->timer = timer;
     b->lineCount = 0;
+    b->leaderboard = leaderboard;
+    b->isResultWritten = false;
 
     for (int i = 0; i < MAX_BOX_COUNT; i++)
     {
@@ -34,20 +45,17 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
 
 void UpdateBoard(Board *b)
 {
-    int w = b->screen->width;
-    int h = b->screen->height;
-    float s;
-    float center_x = (w / 2) - (s / 2);
-    float center_y = (h / 2) - (s / 2);
-    float left_upper_square_x;
-    float left_upper_square_y;
-    int offset;
+    int w, h, offset, i , j, index;
+    float s, center_x, center_y, left_upper_square_x, left_upper_square_y;
     Rectangle rec;
     Vector2 mouse;
-    int i = 0, j = 0;
-    bool isThinking;
-    int index;
 
+    w = b->screen->width;
+    h = b->screen->height;
+    center_x = (w / 2) - (s / 2);
+    center_y = (h / 2) - (s / 2);
+    i = 0; 
+    j = 0;
     switch (b->mode)
     {
     case BOARD_3_X_3:
@@ -111,11 +119,62 @@ void UpdateBoard(Board *b)
         }
     }
     b->lineCount = b->gameState->p1.score + b->gameState->p2.score;
-    if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_R)){
+    if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_R)){ 
+        __RecordResultToFile(b);
         RestartBoard(b);
     }
     if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_B)){
+        __RecordResultToFile(b);
+        RestartBoard(b);
         BackToMainMenu(b);
+    }
+    
+}
+
+int __CalculateEloWin( int currElo, int botDiff) {
+    // base increase = 20
+    // formula ini harus nge-nerf hasil dari permainan jika
+    // currElo = 300 jika easy, 600 jika medium. 900 jika hard.
+    int flattenFac = 1 + pow((currElo / (botDiff * 300)), 3 );
+    int baseReward = (20 * botDiff) ;
+    return currElo  + ( baseReward / flattenFac);
+}
+
+int __CalculateEloLose( int currElo, int botDiff) {
+    double flattenFac = (((double)botDiff*300.0 / ( (double)currElo + 1.0) ));
+    double basePenalty = (20 + (botDiff * 20));
+    return currElo - (basePenalty / flattenFac) ;
+}
+
+void __RecordResultToFile(Board *b) {
+    History history;
+    PlayerElo playerElo;
+    if(!b->isResultWritten){
+        if(b->gameState->vsMode == VSPLAYER){
+            memcpy(&history.p1, &b->gameState->p1, sizeof(Player));
+            memcpy(&history.p2, &b->gameState->p2, sizeof(Player));
+            history.game_mode = b->mode;
+            for(int i = 0; i < 25; i++){
+                history.BoardState[i] = b->boxes[i].value;
+            }
+            WriteHistory(b->leaderboard, &history);
+        }
+        if(b->gameState->vsMode == VSBOT){
+            if (GetPlayerElo(b->leaderboard, &playerElo, b->gameState->p1.name)){
+                if(b->gameState->p1.score > b->gameState->p2.score){
+                    playerElo.elo = __CalculateEloWin(playerElo.elo, b->gameState->botMode + 1);
+                }else if (b->gameState->p1.score < b->gameState->p2.score) {
+                    playerElo.elo = __CalculateEloLose(playerElo.elo, b->gameState->botMode + 1);
+                }else {
+                    playerElo.elo -= 1;
+                }
+            }else {
+                strcpy(&playerElo.name, b->gameState->p1.name);
+                playerElo.elo = 100;
+            }
+            WritePlayerElo(b->leaderboard, &playerElo);
+        }
+        b->isResultWritten = true;
     }
     
 }
@@ -172,21 +231,26 @@ void DrawBoard(Board *b)
 
     // Draw Turn
     if(b->gameState->vsMode == VSPLAYER){
-        if(b->turn == FIRST){
-            Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),25,1).x/2,.y=(b->screen->height/1.2)};
-            DrawTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),turnPos,25,1, RED);
-        }else if(b->turn == SECOND){
-            Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name),25,1).x/2,.y=(b->screen->height/1.2)};
-            DrawTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name), turnPos,25,1,BLUE);
-        }
+        DrawTurnText(b);
     }
     //Draw Score
     if(b->mode == BOARD_5_X_5){
+        DrawScoreText(b);
+    }
+
+
+    if(b->gameState->gameStatus == ENDED &&b->gameState->scene == GAMEPLAY){
+        DrawGameOverScene(b);
+    }
+}
+
+void DrawScoreText(Board *b){
         const char* scoreText1;
         const char* scoreText2;
         int fontSize = b->screen->width*0.035;
         Vector2 pos = (Vector2){0,0};
         Vector2 pos2 = (Vector2){0,b->screen->height/9};
+
         if(b->gameState->vsMode == VSBOT){
             scoreText1 = "Your Score: ";
             scoreText2 = "Bot Score: ";
@@ -196,12 +260,17 @@ void DrawBoard(Board *b)
         }
         DrawTextEx(b->font, TextFormat("%s %d", scoreText1, b->gameState->p1.score),pos, fontSize,1,BLACK);
         DrawTextEx(b->font, TextFormat("%s %d", scoreText2, b->gameState->p2.score),pos2,fontSize, 1,BLACK);
-    }
+}
 
-
-    if(b->gameState->gameStatus == ENDED &&b->gameState->scene == GAMEPLAY){
-        DrawGameOverScene(b);
-    }
+void DrawTurnText(Board *b){
+    Vector2 turnPos;
+        if(b->turn == FIRST){
+            turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),25,1).x/2,.y=(b->screen->height/1.2)};
+            DrawTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),turnPos,25,1, RED);
+        }else if(b->turn == SECOND){
+            turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name),25,1).x/2,.y=(b->screen->height/1.2)};
+            DrawTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name), turnPos,25,1,BLUE);
+        }
 }
 
 void CreateBox(Box *box)
@@ -352,16 +421,11 @@ bool __IsScoring(Board *b, int index)
             b->scoreCondition = DIAGONAL_TOP_RIGHT_END;
             return true;
         }
-    // }
-    // else
-    // {
-    //     assert("UNREACHABLE" || false);
-    // }
     return false;
 
 }
 
-void SetScoreLine(Board *b, int index){
+void SetScoreLineIndex(Board *b, int index){
     int row,col, maxCol;
     maxCol = sqrt(b->board_len);
     __1DTo2D(index,maxCol, &row, &col);
@@ -420,6 +484,11 @@ void SetScoreLine(Board *b, int index){
         break;
     }
     // printf("start: %d end:%d\n",b->scoreLinePos[b->lineCount].startIndex, b->scoreLinePos[b->lineCount].endIndex);
+    SetScoreLinePos(b);
+
+}
+
+void SetScoreLinePos(Board *b){
     if(b->scoreCondition==VERTICAL_MID||b->scoreCondition==VERTICAL_TOP||b->scoreCondition==VERTICAL_BOT){
         b->scoreLinePos[b->lineCount].startPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.x + b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.width/2,.y= b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.y};
         b->scoreLinePos[b->lineCount].endPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.x + b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.width/2,.y= b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.y + b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.height};
@@ -433,14 +502,13 @@ void SetScoreLine(Board *b, int index){
          b->scoreLinePos[b->lineCount].startPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.x+b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.width, .y=b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.y};
          b->scoreLinePos[b->lineCount].endPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.x, .y = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.y + b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.height };
     }
-
 }
-
 void RestartBoard(Board *b){
-    for(int i = 0; i < b->board_len; i++){
+    int i;
+    for(i = 0; i < b->board_len; i++){
          b->boxes[i].value = BOX_EMPTY;
     }
-    for(int i = 0; i <=b->lineCount; i++){
+    for(i = 0; i <=b->lineCount; i++){
         b->scoreLinePos[i].startPos = (Vector2) {0,0};
         b->scoreLinePos[i].endPos = (Vector2) {0,0};
     }
@@ -450,12 +518,14 @@ void RestartBoard(Board *b){
     b->gameState->p1.score = 0;
     b->gameState->p2.score = 0;
     b->lineCount = 0;
+    b->isResultWritten = false;
 }
 void BackToMainMenu(Board *b){
-    for(int i = 0; i < b->board_len; i++){
+    int i;
+    for(i = 0; i < b->board_len; i++){
          b->boxes[i].value = BOX_EMPTY;
     }
-    for(int i = 0; i <=b->lineCount; i++){
+    for(i = 0; i <=b->lineCount; i++){
         b->scoreLinePos[i].startPos = (Vector2) {0,0};
         b->scoreLinePos[i].endPos = (Vector2) {0,0};
     }
@@ -517,7 +587,7 @@ void PlayVsBot(Board *b, int index){
     printf("%d\n", b->turnCount);
     if (__IsScoring(b, index))
       {
-        SetScoreLine(b,index);
+        SetScoreLineIndex(b,index);
         b->gameState->p1.score++;
           if(b->mode == BOARD_3_X_3){
             b->turnCount = 0;
@@ -544,7 +614,7 @@ void PlayVsBot(Board *b, int index){
             if(__IsScoring(b, botIndex)){
                 b->gameState->p2.score++;
                 b->lineCount++;
-                SetScoreLine(b,botIndex);
+                SetScoreLineIndex(b,botIndex);
                 if(b->mode == BOARD_3_X_3){
                     b->turnCount = 0;
                     b->gameState->gameStatus = ENDED;
@@ -596,7 +666,7 @@ void PlayVsPlayer(Board *b, int index){
     }
     if (__IsScoring(b, index))
     {
-        SetScoreLine(b,index);
+        SetScoreLineIndex(b,index);
         if(b->mode == BOARD_3_X_3){
             if(b->turn == SECOND){
                 b->gameState->p1.score++;
@@ -606,6 +676,11 @@ void PlayVsPlayer(Board *b, int index){
             }
             b->turnCount = 0;
             b->gameState->gameStatus = ENDED;
+            if(b->turn == SECOND){
+                b->gameState->p1.score++;
+            }else{
+                b->gameState->p2.score++;
+            }
         }else if(b->mode == BOARD_5_X_5){
             if(b->turn == SECOND){
                 b->gameState->p1.score++;
@@ -623,7 +698,7 @@ void PlayVsPlayer(Board *b, int index){
         }
     }
     if(b->turnCount >= b->board_len){
-        if(b->gameState->p1.score ==b->gameState->p2.score){
+        if(b->gameState->p1.score == b->gameState->p2.score){
           b->turn = NEITHER;
 
         }else if(b->gameState->p1.score > b->gameState->p2.score){
@@ -637,9 +712,12 @@ void PlayVsPlayer(Board *b, int index){
     }
 }
 
+
+
 int CalculateEasyBot(Board *b){
     int index;
-    for(int i = 0; i <= b->board_len; i++){
+    int i;
+    for(i = 0; i <= b->board_len; i++){
         index = GetRandomValue(0,b->board_len-1);
         if(b->boxes[index].value == BOX_EMPTY){
             return index;
@@ -662,7 +740,6 @@ int CalculateMediumBot(Board *b, int index){
                 b->boxes[i].value = BOX_EMPTY;
             }
         }
-
     }else{
         for(int i = 0; i < b->board_len; i++){
             randIndex = GetRandomValue(0,b->board_len);
@@ -676,9 +753,10 @@ int CalculateMediumBot(Board *b, int index){
 }
 int CalculateHardBot(Board *b, int index){
     int randValue;
+    int i;
     if(b->turnCount>1){
         // Cek apakah bisa menang
-        for(int i = 0; i <= b->board_len; i++){
+        for(i = 0; i <= b->board_len; i++){
             if(b->boxes[i].value == BOX_EMPTY){
                     b->boxes[i].value = BOX_X;
                     if(__IsScoring(b,i)){
@@ -689,7 +767,7 @@ int CalculateHardBot(Board *b, int index){
         }
 
         // Cek apakah pemain akan menang
-        for (int i = 0; i < b->board_len; i++)
+        for (i = 0; i < b->board_len; i++)
         {           
             if(b->boxes[i].value == BOX_EMPTY){
                 b->boxes[i].value = BOX_O;

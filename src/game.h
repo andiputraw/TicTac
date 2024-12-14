@@ -1,9 +1,21 @@
+/**
+ * game.h
+ * Author : Andi Putra Wijaya & Maulana Ishak
+ * Created: 15 November 2024
+ * 
+ * Header file untuk game.c. Yang memiliki definisi struct dan enum yang digunakan di modul lain dan utilitas timer
+ */
 #ifndef _SCREEN_H
 #define _SCREEN_H
 
-#include "player.h"
+#include "game.h"
 #include "raylib.h"
 #include <stdbool.h>
+
+typedef struct {
+    char name[20];
+    int score;
+} Player;
 
 typedef struct
 {
@@ -11,8 +23,8 @@ typedef struct
   int height;
 } Screen;
 
-
-typedef enum{
+typedef enum
+{
   FIRST,
   SECOND,
   NEITHER
@@ -23,7 +35,8 @@ typedef enum Scene
   MAIN_MENU = 0,
   SELECT_MODES_MENU,
   GAMEPLAY,
-  LEADERBORAD_MENU
+  LEADERBORAD_MENU,
+  EXIT_GAME,
 } Scene;
 
 typedef enum
@@ -33,19 +46,24 @@ typedef enum
   ENDED,
 } GameStatus;
 
-typedef enum{
+typedef enum
+{
   VSBOT = 0,
   VSPLAYER
 } VsMode;
-
-typedef enum{
+// WARNING:
+// Jangan update ini sembarangan. ada kemungkinan merusak fitur berikut
+// __CalculateEloWin
+typedef enum
+{
   EASY,
   MEDIUM,
   HARD,
   NOTBOT,
 } BotMode;
 
-typedef enum{
+typedef enum
+{
   HORIZONTAL_MID,
   HORIZONTAL_LEFT,
   HORIZONTAL_RIGHT,
@@ -60,7 +78,8 @@ typedef enum{
   DIAGONAL_TOP_RIGHT_END
 } ScoreCondition;
 
-typedef struct{
+typedef struct
+{
   Scene scene;
   GameStatus gameStatus;
   VsMode vsMode;
@@ -69,23 +88,25 @@ typedef struct{
   Player p2;
 } GameState;
 
-typedef struct{
-    int timeAmount;
-    bool isRunning;
-    float elapsedTime;
-    int seconds;
-    int minutes;
-    Font font;
-    GameState *gameState;
+typedef struct
+{
+  int timeAmount;
+  bool isRunning;
+  float elapsedTime;
+  int seconds;
+  int minutes;
+  Font font;
+  GameState *gameState;
 } Timer;
+
+
 
 
 void UpdateScreen(Screen *s, int w, int h);
 
 // Sementara
-void CreateTimer(Timer *timer,GameState *gameState, Font font);
+void CreateTimer(Timer *timer, GameState *gameState, Font font);
 void UpdateTimer(Timer *timer);
 void DrawTimer(Screen *screen, Timer *timer);
-
 
 #endif // _SCREEN_H
