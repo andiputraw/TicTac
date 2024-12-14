@@ -112,6 +112,9 @@ void UpdateBoard(Board *b)
     if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_R)){
         ResetBoard(b);
     }
+    if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_B)){
+        BackToMainMenu(b);
+    }
     
 }
 
@@ -254,7 +257,6 @@ bool __IsScoring(Board *b, int index)
             b->boxes[__2Dto1D(maxCol, row, col-1)].value == currVal &&
             b->boxes[__2Dto1D(maxCol, row, col-2)].value == currVal)
         {
-                printf("horiz right");
                 b->scoreCondition = HORIZONTAL_RIGHT;
                 return true;
    
@@ -410,7 +412,7 @@ void SetScoreLine(Board *b, int index){
     default:
         break;
     }
-    printf("start: %d end:%d\n",startIndex, endIndex);
+    // printf("start: %d end:%d\n",startIndex, endIndex);
     if(b->scoreCondition==VERTICAL_MID||b->scoreCondition==VERTICAL_TOP||b->scoreCondition==VERTICAL_BOT){
         b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x + b->boxes[startIndex].rec.width/2,.y= b->boxes[startIndex].rec.y};
         b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x + b->boxes[endIndex].rec.width/2,.y= b->boxes[endIndex].rec.y + b->boxes[endIndex].rec.height};
@@ -438,6 +440,18 @@ void ResetBoard(Board *b){
     b->turnCount = 0;
     b->gameState->p1.score = 0;
     b->gameState->p2.score = 0;
+}
+void BackToMainMenu(Board *b){
+    for(int i = 0; i < b->board_len; i++){
+         b->boxes[i].value = BOX_EMPTY;
+    }
+    b->scoreLinePos.startPos = (Vector2) {0,0};
+    b->scoreLinePos.endPos = (Vector2) {0,0};
+    b->turn = FIRST;
+    b->turnCount = 0;
+    b->gameState->p1.score = 0;
+    b->gameState->p2.score = 0;
+    b->gameState->scene = MAIN_MENU;
 }
 
 void DrawGameOverScene(Board *b){
@@ -486,19 +500,18 @@ int CalculateBotIndex(Board *b, int index){
 
 void PlayVsBot(Board *b, int index){
     int botIndex;
-    printf("%d", b->turnCount);
     b->boxes[index].value = BOX_O;
+    printf("%d\n", b->turnCount);
     if (__IsScoring(b, index))
       {
         SetScoreLine(b,index);
-          b->turnCount = 0;
           if(b->mode == BOARD_3_X_3){
-            // SetScoreLine(b,index);
+            b->turnCount = 0;
             b->gameState->gameStatus = ENDED;
           }else if(b->mode == BOARD_5_X_5){
             b->gameState->p1.score++;
             if(b->gameState->p1.score >= 5){
-                // SetScoreLine(b,index);
+                    b->turnCount = 0;
                 b->gameState->gameStatus = ENDED;
             }else{
                 b->turn = SECOND;
@@ -516,15 +529,15 @@ void PlayVsBot(Board *b, int index){
             b->boxes[botIndex].value = BOX_X;
             if(__IsScoring(b, botIndex)){
                 SetScoreLine(b,botIndex);
-                b->turnCount = 0;
                 if(b->mode == BOARD_3_X_3){
+                    b->turnCount = 0;
                     b->gameState->gameStatus = ENDED;
                 }
                 else if (b->mode == BOARD_5_X_5)
                 {
                     b->gameState->p2.score++;
-                    // SetScoreLine(b,botIndex);
                     if(b->gameState->p2.score >= 5){
+                        b->turnCount = 0;
                         b->gameState->gameStatus = ENDED;
                     }else{
                         b->turn = FIRST;
@@ -538,8 +551,16 @@ void PlayVsBot(Board *b, int index){
         }
       }
     if(b->turnCount > b->board_len){
-          b->turnCount = 0;
+        if(b->gameState->p1.score ==b->gameState->p2.score){
           b->turn = NEITHER;
+
+        }else if(b->gameState->p1.score > b->gameState->p2.score){
+            b->turn =FIRST;
+
+        }else if(b->gameState->p1.score < b->gameState->p2.score){
+            b->turn =SECOND;
+        }
+          b->turnCount = 0;
           b->gameState->gameStatus = ENDED;
     }
 }

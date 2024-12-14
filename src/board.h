@@ -59,6 +59,7 @@ int CalculateEasyBot(Board *b);
 int CalculateMediumBot(Board *b, int index);
 int CalculateHardBot(Board *b, int index);
 void PlayVsPlayer(Board *b , int index);
+void BackToMainMenu(Board *b);
 
 int __2Dto1D(int maxCol, int row, int col);
 void __1DTo2D(int index, int maxCol, int *row, int *col);

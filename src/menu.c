@@ -271,12 +271,12 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
 
     if(menu->classicModeBtn.isClicked){
         menu->b->mode = BOARD_3_X_3;
-        *menu->scene = GAMEPLAY;
+        menu->gameState->scene = GAMEPLAY;
         menu->gameState->gameStatus = PLAYING;
     }
     if(menu->extendedModeBtn.isClicked){
         menu->b->mode = BOARD_5_X_5;
-        *menu->scene = GAMEPLAY;
+        menu->gameState->scene = GAMEPLAY;
         menu->gameState->gameStatus = PLAYING;
     }
     
