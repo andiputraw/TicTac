@@ -7,8 +7,8 @@
 #define _BOARD_H
 
 #define BOARD_3_X_3 1
-#define BOARD_PYRAMID 2
-#define BOARD_5_X_5 4
+#define BOARD_5_X_5 2
+#define BOARD_PYRAMID 3
 
 #define BOX_DRAW_SIZE 45
 #define MAX_BOX_COUNT 42

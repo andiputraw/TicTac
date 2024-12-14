@@ -37,6 +37,8 @@ typedef enum {
 typedef struct{
     Button nextBtn;
     Button backBtn;
+    Button nextHistory;
+    Button prevHistory;
 
     LeaderboardMenuScene menuScene;
     Screen *screen;
@@ -44,6 +46,12 @@ typedef struct{
     GameState *gameState;
     Leaderboard *leaderboard;
     Font font;
+    bool isLeaderboardUpdated ;
+    PlayerElo Top5Leaderboard[5];
+    int page;
+    int len;
+    int max_page;
+    History CurrentlyShowedHistory[5];
 } LeaderboardMenu;
 
 void CreateMainMenu(MainMenu *mainmenu, Screen *screen, Scene *scene, Font font);

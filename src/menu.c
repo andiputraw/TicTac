@@ -3,12 +3,17 @@
 #include "game.h"
 #include "raylib.h"
 #include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include "board.h"
+#include <string.h>
 
-Rectangle __CalculateButtonRect(Screen *screen, int index, int btnWidth, int btnHeight, int btnMarginTop){
-    int firstMenuUpperX = screen->width / 2  - btnWidth / 2;
+Rectangle __CalculateButtonRect(Screen *screen, int index, int btnWidth, int btnHeight, int btnMarginTop)
+{
+    int firstMenuUpperX = screen->width / 2 - btnWidth / 2;
     int firstMenuUpperY = screen->height / 2 - btnHeight / 2;
 
-    return (Rectangle) {
+    return (Rectangle){
         .x = firstMenuUpperX,
         .y = firstMenuUpperY,
         .height = btnHeight + (btnMarginTop * index),
@@ -16,44 +21,48 @@ Rectangle __CalculateButtonRect(Screen *screen, int index, int btnWidth, int btn
     };
 }
 
-ButtonStyle MainMenuButtonStyle(Font font, int fontSize){
+ButtonStyle MainMenuButtonStyle(Font font, int fontSize)
+{
     return CreateButtonStyle(GRAY, WHITE, font, fontSize);
 }
 
-InputTextStyle MainMenuInputTextStyle(Font font, int fontSize) {
+InputTextStyle MainMenuInputTextStyle(Font font, int fontSize)
+{
     return CreateInputTextStyle(GRAY, WHITE, font, fontSize);
 }
 
-void CreateMainMenu(MainMenu *mainMenu, Screen *screen, Scene *scene, Font font){
-    int btn_width = screen->width*0.15;
-    int btn_height = screen->height*0.1;
-    int first_menu_upper_x = screen->width/2 - btn_width/2;
-    int first_menu_upper_y = screen->height/2 - btn_height/2;
-    int btn_margin_top = screen->width/16;
-    int menu_font_size = screen->width*0.03;
+void CreateMainMenu(MainMenu *mainMenu, Screen *screen, Scene *scene, Font font)
+{
+    int btn_width = screen->width * 0.15;
+    int btn_height = screen->height * 0.1;
+    int first_menu_upper_x = screen->width / 2 - btn_width / 2;
+    int first_menu_upper_y = screen->height / 2 - btn_height / 2;
+    int btn_margin_top = screen->width / 16;
+    int menu_font_size = screen->width * 0.03;
 
     char *playText[3] = {"PLAY", "HISTORY", "EXIT"};
 
-    Button *buttons[3] = { &mainMenu->playBtn, &mainMenu->historyBtn, &mainMenu->exitBtn };
+    Button *buttons[3] = {&mainMenu->playBtn, &mainMenu->historyBtn, &mainMenu->exitBtn};
 
-    for(int i = 0; i < 3; i ++){
-        CreateButton(buttons[i], __CalculateButtonRect(screen, i, btn_width, btn_height, btn_margin_top), playText[i], MainMenuButtonStyle( font, menu_font_size));
+    for (int i = 0; i < 3; i++)
+    {
+        CreateButton(buttons[i], __CalculateButtonRect(screen, i, btn_width, btn_height, btn_margin_top), playText[i], MainMenuButtonStyle(font, menu_font_size));
     }
-    *mainMenu = (MainMenu) {.playBtn = *buttons[0], .historyBtn = *buttons[1], .exitBtn = *buttons[2], .screen = screen, .scene = scene};
+    *mainMenu = (MainMenu){.playBtn = *buttons[0], .historyBtn = *buttons[1], .exitBtn = *buttons[2], .screen = screen, .scene = scene};
 }
 
-void UpdateMainMenu(MainMenu *mainMenu){
-    int btn_width = mainMenu->screen->width*0.15;
-    int btn_height = mainMenu->screen->height*0.1;
-    int first_menu_upper_x = mainMenu->screen->width/2 - btn_width/2;
-    int first_menu_upper_y = mainMenu->screen->height/2 - btn_height/2;
-    int btn_margin_top = mainMenu->screen->width/16;
-    int menu_font_size = mainMenu->screen->width*0.03;
+void UpdateMainMenu(MainMenu *mainMenu)
+{
+    int btn_width = mainMenu->screen->width * 0.15;
+    int btn_height = mainMenu->screen->height * 0.1;
+    int first_menu_upper_x = mainMenu->screen->width / 2 - btn_width / 2;
+    int first_menu_upper_y = mainMenu->screen->height / 2 - btn_height / 2;
+    int btn_margin_top = mainMenu->screen->width / 16;
+    int menu_font_size = mainMenu->screen->width * 0.03;
 
-
-    Rectangle playRect = (Rectangle) {.x = first_menu_upper_x, .y = first_menu_upper_y, .width=btn_width, .height=btn_height};
-    Rectangle historyRect = (Rectangle) {.x = first_menu_upper_x, .y = first_menu_upper_y+btn_margin_top, .width=btn_width, .height=btn_height};
-    Rectangle exitRect = (Rectangle) {.x = first_menu_upper_x, .y = first_menu_upper_y+(btn_margin_top*2), .width=btn_width, .height=btn_height};
+    Rectangle playRect = (Rectangle){.x = first_menu_upper_x, .y = first_menu_upper_y, .width = btn_width, .height = btn_height};
+    Rectangle historyRect = (Rectangle){.x = first_menu_upper_x, .y = first_menu_upper_y + btn_margin_top, .width = btn_width, .height = btn_height};
+    Rectangle exitRect = (Rectangle){.x = first_menu_upper_x, .y = first_menu_upper_y + (btn_margin_top * 2), .width = btn_width, .height = btn_height};
 
     // char *playText[3] = {"PLAY", "HISTORY", "EXIT"};
 
@@ -71,38 +80,44 @@ void UpdateMainMenu(MainMenu *mainMenu){
     mainMenu->historyBtn.style.fontSize = menu_font_size;
     mainMenu->exitBtn.style.fontSize = menu_font_size;
 
-
     UpdateButton(&mainMenu->historyBtn);
     UpdateButton(&mainMenu->exitBtn);
     UpdateButton(&mainMenu->playBtn);
 
-    if(mainMenu->playBtn.isClicked){
+    if (mainMenu->playBtn.isClicked)
+    {
         *mainMenu->scene = SELECT_MODES_MENU;
     }
-    if(mainMenu->historyBtn.isClicked) {
+    if (mainMenu->historyBtn.isClicked)
+    {
         *mainMenu->scene = LEADERBORAD_MENU;
     }
 }
 
-void MainMenuDraw(MainMenu mainMenu){
-    int title_font_size = mainMenu.screen->width*0.04;
-    DrawText("Main Menu",mainMenu.screen->width/2  - MeasureText("Main Menu",title_font_size)/2,mainMenu.screen->height/4, title_font_size, BLACK);
+void MainMenuDraw(MainMenu mainMenu)
+{
+    int title_font_size = mainMenu.screen->width * 0.04;
+    DrawText("Main Menu", mainMenu.screen->width / 2 - MeasureText("Main Menu", title_font_size) / 2, mainMenu.screen->height / 4, title_font_size, BLACK);
     DrawButton(&mainMenu.playBtn);
     DrawButton(&mainMenu.historyBtn);
     DrawButton(&mainMenu.exitBtn);
 }
 
-Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_height, int btn_width, int margin_r, int len, float h_loc){
+Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_height, int btn_width, int margin_r, int len, float h_loc)
+{
     int firstMenuUpperX;
     int firstMenuUpperY = (screen->height * h_loc);
 
-    if(len % 2 == 0){
+    if (len % 2 == 0)
+    {
         firstMenuUpperX = (screen->width / len) - (btn_width);
-    }else {
+    }
+    else
+    {
         firstMenuUpperX = (screen->width / len) - (btn_width / 2);
     }
 
-    return (Rectangle) {
+    return (Rectangle){
         .x = firstMenuUpperX + (index * (btn_width) + index * (margin_r)),
         .y = firstMenuUpperY,
         .height = btn_height,
@@ -110,36 +125,41 @@ Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_he
     };
 }
 
-void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font){
-    int btn_width = screen->width*0.15;
-    int btn_height = screen->height*0.1;
+void CreateModeSelectMenu(ModeSelectMenu *menu, GameState *gameState, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font)
+{
+    int btn_width = screen->width * 0.15;
+    int btn_height = screen->height * 0.1;
     int btn_margin_right = btn_width * 0.1;
-    int menu_font_size = screen->width*0.03;
+    int menu_font_size = screen->width * 0.03;
     Rectangle rec;
     Button *buttons[2] = {&menu->classicModeBtn, &menu->extendedModeBtn};
     char *btn_text[2] = {"Classic", "Extended"};
-    for(int i = 0; i < 2; i++) {
-        rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 3 , 0.8);
+    for (int i = 0; i < 2; i++)
+    {
+        rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 3, 0.8);
         CreateButton(buttons[i], rec, btn_text[i], MainMenuButtonStyle(font, menu_font_size));
     }
 
     int input_width = screen->width * 0.4;
     int input_height = screen->height * 0.1;
     int input_margin_right = input_width * 0.1;
-    InputTextStyle style = MainMenuInputTextStyle(font, menu_font_size) ;
+    InputTextStyle style = MainMenuInputTextStyle(font, menu_font_size);
     SetInputTextStylePlaceholder(&style, "Enter your name..");
-    CreateInputText(&menu->InputP1Name, __MeasureRectangleModeSelectMenu(screen, 0, input_height, input_width, input_margin_right, 2, 0.2), input_p1,  style);
-    CreateInputText(&menu->InputP2Name, __MeasureRectangleModeSelectMenu(screen, 1, input_height, input_width, input_margin_right, 2, 0.2), input_p2, MainMenuInputTextStyle(font, menu_font_size) );
-
+    CreateInputText(&menu->InputP1Name, __MeasureRectangleModeSelectMenu(screen, 0, input_height, input_width, input_margin_right, 2, 0.2), input_p1, style);
+    CreateInputText(&menu->InputP2Name, __MeasureRectangleModeSelectMenu(screen, 1, input_height, input_width, input_margin_right, 2, 0.2), input_p2, MainMenuInputTextStyle(font, menu_font_size));
 
     Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
     char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
-    if(gameState->vsMode ==VSPLAYER){
+    if (gameState->vsMode == VSPLAYER)
+    {
         menu->vsPlayerBtn.style.bgColor = BLUE;
-    }else{
+    }
+    else
+    {
         menu->vsBotBtn.style.bgColor = BLUE;
     }
-    for( int i = 0; i < 2; i++){
+    for (int i = 0; i < 2; i++)
+    {
         rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 2, 0.4);
         CreateButton(vs_btn[i], rec, vs_btn_text[i], MainMenuButtonStyle(font, menu_font_size));
     }
@@ -147,7 +167,8 @@ void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *scr
     Button *diff_btn[3] = {&menu->easyBotBtn, &menu->mediumBotBtn, &menu->hardBotBtn};
     char *diff_btn_text[3] = {"EASY", "MEDIUM", "HARD"};
 
-    for(int i = 0; i < 3; i++){
+    for (int i = 0; i < 3; i++)
+    {
         rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 3, 0.6);
         CreateButton(diff_btn[i], rec, diff_btn_text[i], MainMenuButtonStyle(font, menu_font_size));
     }
@@ -164,31 +185,31 @@ void CreateModeSelectMenu(ModeSelectMenu *menu,GameState *gameState, Screen *scr
         .mediumBotBtn = menu->mediumBotBtn,
         .hardBotBtn = menu->hardBotBtn,
         .scene = scene,
-        .gameState= gameState
-    };
-
+        .gameState = gameState};
 }
 
-void UpdateModeSelectMenu(ModeSelectMenu *menu) {
-    int btn_width = menu->screen->width*0.15;
-    int btn_height = menu->screen->height*0.1;
+void UpdateModeSelectMenu(ModeSelectMenu *menu)
+{
+    int btn_width = menu->screen->width * 0.15;
+    int btn_height = menu->screen->height * 0.1;
     int btn_margin_right = btn_width * 0.2;
-    int menu_font_size = menu->screen->width*0.03;
+    int menu_font_size = menu->screen->width * 0.03;
     Rectangle rec;
     Button *buttons[2] = {&menu->classicModeBtn, &menu->extendedModeBtn};
     char *btn_text[2] = {"Classic", "Extended"};
-    for(int i = 0; i < 2; i++) {
-        rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width, btn_margin_right, 3 , 0.8);
+    for (int i = 0; i < 2; i++)
+    {
+        rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width, btn_margin_right, 3, 0.8);
         buttons[i]->rect = rec;
         buttons[i]->style.fontSize = menu_font_size;
         UpdateButton(buttons[i]);
-        if(buttons[i]->isClicked){
+        if (buttons[i]->isClicked)
+        {
             *menu->scene = GAMEPLAY;
             menu->gameState->gameStatus = PLAYING;
-            printf("%d",menu->gameState->gameStatus);
+            printf("%d", menu->gameState->gameStatus);
         }
     }
-
 
     int input_width = menu->screen->width * 0.3;
     int input_height = menu->screen->height * 0.1;
@@ -200,29 +221,33 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     menu->InputP2Name.style.fontSize = menu_font_size;
 
     UpdateInputText(&menu->InputP1Name);
-    if(menu->gameState->vsMode == VSPLAYER){
+    if (menu->gameState->vsMode == VSPLAYER)
+    {
 
         UpdateInputText(&menu->InputP2Name);
     }
 
-
-    for(int i = 0; i<20; i++){
+    for (int i = 0; i < 20; i++)
+    {
         menu->gameState->p1.name[i] = menu->InputP1Name.value[i];
         menu->gameState->p2.name[i] = menu->InputP2Name.value[i];
     }
 
-
     Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
     char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
-    if(menu->gameState->vsMode ==VSPLAYER){
+    if (menu->gameState->vsMode == VSPLAYER)
+    {
         menu->vsPlayerBtn.style.bgColor = BLUE;
         menu->vsBotBtn.style.bgColor = GRAY;
-    }else{
+    }
+    else
+    {
         menu->vsPlayerBtn.style.bgColor = GRAY;
         menu->vsBotBtn.style.bgColor = GREEN;
     }
 
-    for( int i = 0; i < 2; i++){
+    for (int i = 0; i < 2; i++)
+    {
         rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width + 30, btn_margin_right, 2, 0.4);
         vs_btn[i]->rect = rec;
         vs_btn[i]->style.fontSize = menu_font_size;
@@ -230,108 +255,138 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
     }
 
     Button *diff_btn[3] = {&menu->easyBotBtn, &menu->mediumBotBtn, &menu->hardBotBtn};
-    
-    if(menu->gameState->botMode == EASY){
+
+    if (menu->gameState->botMode == EASY)
+    {
         menu->easyBotBtn.style.bgColor = BLUE;
         menu->mediumBotBtn.style.bgColor = GRAY;
         menu->hardBotBtn.style.bgColor = GRAY;
-    }else if(menu->gameState->botMode == MEDIUM){
+    }
+    else if (menu->gameState->botMode == MEDIUM)
+    {
         menu->easyBotBtn.style.bgColor = GRAY;
         menu->mediumBotBtn.style.bgColor = ORANGE;
         menu->hardBotBtn.style.bgColor = GRAY;
-    }else{
+    }
+    else
+    {
         menu->easyBotBtn.style.bgColor = GRAY;
         menu->mediumBotBtn.style.bgColor = GRAY;
         menu->hardBotBtn.style.bgColor = RED;
     }
 
-    for(int i = 0; i < 3; i++){
+    for (int i = 0; i < 3; i++)
+    {
         rec = __MeasureRectangleModeSelectMenu(menu->screen, i, btn_height, btn_width, btn_margin_right, 3, 0.6);
         diff_btn[i]->rect = rec;
         diff_btn[i]->style.fontSize = menu_font_size;
         UpdateButton(diff_btn[i]);
     }
 
-    if(menu->vsPlayerBtn.isClicked){
+    if (menu->vsPlayerBtn.isClicked)
+    {
         menu->gameState->vsMode = VSPLAYER;
     }
-    if(menu->vsBotBtn.isClicked){
+    if (menu->vsBotBtn.isClicked)
+    {
         menu->gameState->vsMode = VSBOT;
     }
-    if(menu->easyBotBtn.isClicked){
+    if (menu->easyBotBtn.isClicked)
+    {
         menu->gameState->botMode = EASY;
     }
-    if(menu->mediumBotBtn.isClicked){
+    if (menu->mediumBotBtn.isClicked)
+    {
         menu->gameState->botMode = MEDIUM;
     }
-    if(menu->hardBotBtn.isClicked){
+    if (menu->hardBotBtn.isClicked)
+    {
         menu->gameState->botMode = HARD;
     }
-    
 }
 
-void ModeSelectMenuDraw(ModeSelectMenu *selectMenu){
+void ModeSelectMenuDraw(ModeSelectMenu *selectMenu)
+{
     DrawButton(&selectMenu->classicModeBtn);
     DrawButton(&selectMenu->extendedModeBtn);
 
     DrawInputText(&selectMenu->InputP1Name);
-    if(selectMenu->gameState->vsMode == VSPLAYER){
+    if (selectMenu->gameState->vsMode == VSPLAYER)
+    {
         DrawInputText(&selectMenu->InputP2Name);
     }
 
     DrawButton(&selectMenu->vsPlayerBtn);
     DrawButton(&selectMenu->vsBotBtn);
-    if(selectMenu->gameState->vsMode==VSBOT){
+    if (selectMenu->gameState->vsMode == VSBOT)
+    {
         DrawButton(&selectMenu->easyBotBtn);
         DrawButton(&selectMenu->mediumBotBtn);
         DrawButton(&selectMenu->hardBotBtn);
     }
 }
 
-int __CalculateMenuButtonFontSize(Screen screen){
+int __CalculateMenuButtonFontSize(Screen screen)
+{
     int fontSize = 48;
-    if(screen.width <= 1024){
+    if (screen.width <= 1024)
+    {
         fontSize = 24;
-    }else if(screen.width <= 1360){
+    }
+    else if (screen.width <= 1360)
+    {
         fontSize = 32;
     }
     return fontSize;
 }
 
-int __ResponsiveFontSize(Screen screen, int min, int mid, int max){
+int __ResponsiveFontSize(Screen screen, int min, int mid, int max)
+{
     int fontSize = max;
-    if(screen.width <= 1024){
+    if (screen.width <= 1024)
+    {
         fontSize = min;
-    }else if(screen.width <= 1360){
+    }
+    else if (screen.width <= 1360)
+    {
         fontSize = mid;
     }
     return fontSize;
 }
 
-ButtonStyle BetterMenuButtonStyle(Font font, Screen screen){
+ButtonStyle BetterMenuButtonStyle(Font font, Screen screen)
+{
     int fontSize = __CalculateMenuButtonFontSize(screen);
     return CreateButtonStyle(WHITE, BLACK, font, fontSize);
 }
 
-
-void CreateLeaderboardMenu(LeaderboardMenu *menu, GameState *gameState, Screen *screen, Scene *scene, Leaderboard *l, Font font){
+void CreateLeaderboardMenu(LeaderboardMenu *menu, GameState *gameState, Screen *screen, Scene *scene, Leaderboard *l, Font font)
+{
     menu->gameState = gameState;
     menu->leaderboard = l;
     menu->scene = scene;
     menu->screen = screen;
     menu->font = font;
     menu->menuScene = LeaderboardMenuLeaderboard;
+    menu->isLeaderboardUpdated = false;
+    menu->page = 0;
     CreateButton(&menu->nextBtn, NO_RECT, "History", BetterMenuButtonStyle(font, *screen));
     CreateButton(&menu->backBtn, NO_RECT, "Back", BetterMenuButtonStyle(font, *screen));
+    CreateButton(&menu->nextHistory, NO_RECT, ">", BetterMenuButtonStyle(font, *screen));
+    CreateButton(&menu->prevHistory, NO_RECT, "<", BetterMenuButtonStyle(font, *screen));
 }
 
-void UpdateLeaderboardMenu(LeaderboardMenu *menu){
+void UpdateLeaderboardMenu(LeaderboardMenu *menu)
+{
 
     int width = menu->screen->width * 0.2 > 240 ? 240 : menu->screen->width * 0.2;
     int height = menu->screen->height * 0.1 > 60 ? 60 : menu->screen->height * 0.1;
 
     menu->nextBtn.style.fontSize = __CalculateMenuButtonFontSize(*menu->screen);
     menu->backBtn.style.fontSize = __CalculateMenuButtonFontSize(*menu->screen);
+    menu->nextHistory.style.fontSize = __CalculateMenuButtonFontSize(*menu->screen);
+    menu->prevHistory.style.fontSize = __CalculateMenuButtonFontSize(*menu->screen);
+
     menu->backBtn.rect = (Rectangle){
         .x = menu->screen->width * 0.05,
         .y = menu->screen->height * 0.1,
@@ -344,29 +399,93 @@ void UpdateLeaderboardMenu(LeaderboardMenu *menu){
         .width = width,
         .height = height,
     };
+    menu->nextHistory.rect = (Rectangle){
+        .x = menu->screen->width * 0.85,
+        .y = menu->screen->height * 0.5,
+        .width = menu->font.baseSize,
+        .height = height,
+    };
+    menu->prevHistory.rect = (Rectangle){
+        .x = menu->screen->width * 0.05,
+        .y = menu->screen->height * 0.5,
+        .width = menu->font.baseSize,
+        .height = height,
+    };
+
     UpdateButton(&menu->nextBtn);
     UpdateButton(&menu->backBtn);
+    UpdateButton(&menu->nextHistory);
+    UpdateButton(&menu->prevHistory);
 
-    if(menu->nextBtn.isClicked){
-        if(menu->menuScene == LeaderboardMenuLeaderboard){
+    if (menu->nextBtn.isClicked)
+    {
+        if (menu->menuScene == LeaderboardMenuLeaderboard)
+        {
             menu->menuScene = LeaderboardMenuHistory;
-        }else {
+        }
+        else
+        {
             menu->menuScene = LeaderboardMenuLeaderboard;
         }
     }
 
-    if(menu->backBtn.isClicked) {
+    if (!menu->isLeaderboardUpdated)
+    {
+        RefreshLeaderboardBuffer(menu->leaderboard);
+        ReadTop5Player(menu->leaderboard, &menu->Top5Leaderboard[0]);
+
+        int history_len = GetHistoryLen(menu->leaderboard);
+        int offset = 0;
+        menu->max_page = ceilf(history_len / 5);
+
+        if (history_len > 5)
+        {
+            menu->len = 5;
+            offset = history_len - ((menu->page + 1) * 5);
+        }
+        else
+        {
+            offset = 0;
+            menu->len = history_len;
+        }
+
+        ReadHistory(menu->leaderboard, &menu->CurrentlyShowedHistory, menu->len, offset);
+        menu->isLeaderboardUpdated = true;
+    }
+
+    if (menu->backBtn.isClicked)
+    {
         *menu->scene = MAIN_MENU;
+        menu->isLeaderboardUpdated = false;
+    }
+    if (menu->nextHistory.isClicked)
+    {
+        menu->isLeaderboardUpdated = false;
+        menu->page += 1;
+        if (menu->page > menu->max_page)
+        {
+            menu->page = 0;
+        }
+    }
+
+    if (menu->prevHistory.isClicked)
+    {
+        menu->isLeaderboardUpdated = false;
+        menu->page -= 1;
+        if (menu->page < 0)
+        {
+            menu->page = menu->max_page;
+        }
     }
 }
 
-void DrawLeaderboardMenu(LeaderboardMenu *menu){
-    int titleFont = __ResponsiveFontSize(*menu->screen, 48,64,80);
+void DrawLeaderboardMenu(LeaderboardMenu *menu)
+{
+    int titleFont = __ResponsiveFontSize(*menu->screen, 48, 64, 80);
     int contentFontSize = __ResponsiveFontSize(*menu->screen, 32, 48, 64);
     Vector2 textLoc = (Vector2){
         .x = (menu->screen->width / 2),
-        .y = (menu->screen->height * 0.1)
-    };
+        .y = (menu->screen->height * 0.1)};
     Vector2 StartMidVerticalTable = (Vector2){
         .x = (menu->screen->width / 2),
         .y = (menu->screen->height * 0.3),
@@ -375,48 +494,181 @@ void DrawLeaderboardMenu(LeaderboardMenu *menu){
         .x = (menu->screen->width / 2),
         .y = (menu->screen->height * 0.9),
     };
+    // untuk history
+    Vector2 StartVertical1 = (Vector2){
+        .x = ((menu->screen->width * 0.8) / 3) + menu->screen->width * 0.1,
+        .y = (menu->screen->height * 0.3),
+    };
+    Vector2 EndVertical1 = (Vector2){
+        .x = ((menu->screen->width * 0.8) / 3) + menu->screen->width * 0.1,
+        .y = (menu->screen->height * 0.9),
+    };
+
+    Vector2 StartVertical2 = (Vector2){
+        .x = (((menu->screen->width * 0.8) / 3) * 2) + menu->screen->width * 0.1,
+        .y = (menu->screen->height * 0.3),
+    };
+    Vector2 EndVertical2 = (Vector2){
+        .x = (((menu->screen->width * 0.8) / 3) * 2) + menu->screen->width * 0.1,
+        .y = (menu->screen->height * 0.9),
+    };
+
+    // untuk leaderboard
     Vector2 StartHorizontal, EndHorizontal;
     float element_height = menu->screen->height * 0.1;
     Vector2 contentPos;
+    char itoaBuff[8] = {0};
 
     DrawButton(&menu->nextBtn);
     DrawButton(&menu->backBtn);
-    if(menu->menuScene == LeaderboardMenuLeaderboard){
+
+    if (menu->menuScene == LeaderboardMenuLeaderboard)
+    {
         textLoc.x -= MeasureTextEx(menu->font, "Leaderboard", titleFont, 1).x / 2;
         DrawTextEx(menu->font, "Leaderboard", textLoc, titleFont, 1, BLACK);
-    }else {
+    }
+    else
+    {
         textLoc.x -= MeasureTextEx(menu->font, "History", titleFont, 1).x / 2;
         DrawTextEx(menu->font, "History", textLoc, titleFont, 1, BLACK);
+        DrawButton(&menu->nextHistory);
+        DrawButton(&menu->prevHistory);
     }
 
-    // Table
-    DrawLineEx(StartMidVerticalTable, EndMidVerticalTable, 4.0, BLACK);
-    for(int i = 0; i < 5; i++){
-        StartHorizontal.x = menu->screen->width * 0.3;
-        StartHorizontal.y = (menu->screen->height * 0.4) + ( element_height * i);
+    if (menu->menuScene == LeaderboardMenuLeaderboard)
+    {
 
-        EndHorizontal.x = menu->screen->width * 0.7;
-        EndHorizontal.y = (menu->screen->height * 0.4) + ( element_height * i);
+        // Table
+        DrawLineEx(StartMidVerticalTable, EndMidVerticalTable, 4.0, BLACK);
+        for (int i = 0; i < 5; i++)
+        {
+            StartHorizontal.x = menu->screen->width * 0.3;
+            StartHorizontal.y = (menu->screen->height * 0.4) + (element_height * i);
 
-        DrawLineEx(StartHorizontal, EndHorizontal, 4.0, BLACK);
+            EndHorizontal.x = menu->screen->width * 0.7;
+            EndHorizontal.y = (menu->screen->height * 0.4) + (element_height * i);
+
+            DrawLineEx(StartHorizontal, EndHorizontal, 4.0, BLACK);
+        }
+        for (int i = 0; i < 6; i++)
+        {
+            if (i == 0)
+            {
+                // Draw Header Table
+                contentPos.x = StartHorizontal.x + (EndHorizontal.x - StartHorizontal.x) / 4 - MeasureTextEx(menu->font, "Name", contentFontSize, 1).x / 2;
+                contentPos.y = (menu->screen->height * 0.4) + (element_height * (i - 1) + element_height / 4);
+                DrawTextEx(menu->font, "Name", contentPos, contentFontSize, 1, BLACK);
+
+                contentPos.x = StartHorizontal.x + (EndHorizontal.x - StartHorizontal.x) * 3 / 4 - MeasureTextEx(menu->font, "Elo", contentFontSize, 1).x / 2;
+                DrawTextEx(menu->font, "Elo", contentPos, contentFontSize, 1, BLACK);
+            }
+            else
+            {
+                if (menu->Top5Leaderboard[i - 1].elo <= 0)
+                {
+                    continue;
+                }
+                itoa(menu->Top5Leaderboard[i - 1].elo, itoaBuff, 10);
+                // Draw Header content
+                contentPos.x = StartHorizontal.x + (EndHorizontal.x - StartHorizontal.x) / 4 - MeasureTextEx(menu->font, menu->Top5Leaderboard[i - 1].name, contentFontSize, 1).x / 2;
+                contentPos.y = (menu->screen->height * 0.4) + (element_height * (i - 1) + element_height / 4);
+                DrawTextEx(menu->font, menu->Top5Leaderboard[i - 1].name, contentPos, contentFontSize, 1, GRAY);
+
+                contentPos.x = StartHorizontal.x + (EndHorizontal.x - StartHorizontal.x) * 3 / 4 - MeasureTextEx(menu->font, itoaBuff, contentFontSize, 1).x / 2;
+                DrawTextEx(menu->font, itoaBuff, contentPos, contentFontSize, 1, GRAY);
+            }
+        }
     }
-    for(int i = 0; i < 6; i++){
-        if(i == 0 ){
-            // Draw Header Table
-            contentPos.x = StartHorizontal.x + (EndHorizontal.x - StartHorizontal.x) / 4 - MeasureTextEx(menu->font, "Name", contentFontSize, 1).x / 2;
-            contentPos.y = (menu->screen->height * 0.4) + ( element_height * (i - 1) + element_height / 4) ;
-            DrawTextEx(menu->font, "Name", contentPos, contentFontSize, 1, BLACK);
+    else
+    {
+        DrawLineEx(StartVertical1, EndVertical1, 4.0, BLACK);
+        DrawLineEx(StartVertical2, EndVertical2, 4.0, BLACK);
+        for (int i = 0; i < 5; i++)
+        {
+            StartHorizontal.x = menu->screen->width * 0.2;
+            StartHorizontal.y = (menu->screen->height * 0.4) + (element_height * i);
 
-            contentPos.x = StartHorizontal.x + (EndHorizontal.x - StartHorizontal.x) * 3 / 4 - MeasureTextEx(menu->font, "Elo", contentFontSize, 1).x / 2;
-            DrawTextEx(menu->font, "Elo", contentPos, contentFontSize, 1, BLACK);
-        }else {
-            // Draw Header Table
-            contentPos.x = StartHorizontal.x + (EndHorizontal.x - StartHorizontal.x) / 4 - MeasureTextEx(menu->font, "Nama 1", contentFontSize, 1).x / 2;
-            contentPos.y = (menu->screen->height * 0.4) + ( element_height * (i - 1) + element_height / 4) ;
-            DrawTextEx(menu->font, "Nama 1", contentPos, contentFontSize, 1, GRAY);
+            EndHorizontal.x = menu->screen->width * 0.8;
+            EndHorizontal.y = (menu->screen->height * 0.4) + (element_height * i);
 
-            contentPos.x = StartHorizontal.x + (EndHorizontal.x - StartHorizontal.x) * 3 / 4 - MeasureTextEx(menu->font, "999", contentFontSize, 1).x / 2;
-            DrawTextEx(menu->font, "999", contentPos, contentFontSize, 1, GRAY);
+            DrawLineEx(StartHorizontal, EndHorizontal, 4.0, BLACK);
+        }
+
+        for (int i = 0; i < menu->len + 1; i++)
+        {
+            if (i == 0)
+            {
+                contentPos.x = StartHorizontal.x + ((StartVertical1.x - StartHorizontal.x) / 2) - (MeasureTextEx(menu->font, "Game Mode", contentFontSize, 1).x / 2) - 10;
+                contentPos.y = (menu->screen->height * 0.4) + (element_height * (i - 1) + element_height / 4) - 10;
+                DrawTextEx(menu->font, "Game Mode", contentPos, contentFontSize, 1, BLACK);
+                int startX2 = (StartVertical1.x);
+                int content2width = (StartVertical2.x - startX2);
+                contentPos.x = startX2 + (content2width / 2) - (MeasureTextEx(menu->font, "Player 1", contentFontSize, 1).x / 2);
+                contentPos.y = (menu->screen->height * 0.4) + (element_height * (i - 1) + element_height / 4) - 10;
+                DrawTextEx(menu->font, "Player 1", contentPos, contentFontSize, 1, BLACK);
+
+                int startX3 = (StartVertical2.x);
+                int content3width = (EndHorizontal.x - startX3);
+                contentPos.x = startX3 + (content3width / 2) - (MeasureTextEx(menu->font, "Player 2", contentFontSize, 1).x / 2);
+                contentPos.y = (menu->screen->height * 0.4) + (element_height * (i - 1) + element_height / 4) - 10;
+                DrawTextEx(menu->font, "Player 2", contentPos, contentFontSize, 1, BLACK);
+            }
+            else
+            {
+                // loop dari belakang. tidak perlu i - 1 karena i sudah loop dari 1 - 5
+                int index = (5 - i);
+                char gamemode[10] = "Classic";
+                Color win_color = GetColor(0x9EDF9CFF);
+                Color draw_color = GetColor(0xFFE31AFF);
+                if (menu->CurrentlyShowedHistory[index].game_mode == BOARD_3_X_3)
+                {
+                    strcpy(gamemode, "Classic");
+                }
+                else if (menu->CurrentlyShowedHistory[index].game_mode == BOARD_5_X_5)
+                {
+                    strcpy(gamemode, "Extended");
+                }
+
+                char *p1Name = menu->CurrentlyShowedHistory[index].p1.name;
+                char *p2Name = menu->CurrentlyShowedHistory[index].p2.name;
+                int p1Score = menu->CurrentlyShowedHistory[index].p1.score;
+                int p2Score = menu->CurrentlyShowedHistory[index].p2.score;
+                contentPos.x = StartHorizontal.x + ((StartVertical1.x - StartHorizontal.x) / 2) - (MeasureTextEx(menu->font, gamemode, contentFontSize, 1).x / 2) - 10;
+                contentPos.y = (menu->screen->height * 0.4) + (element_height * (i - 1) + element_height / 4) - 10;
+                DrawTextEx(menu->font, gamemode, contentPos, contentFontSize, 1, GRAY);
+
+                int startX2 = (StartVertical1.x);
+                int content2width = (StartVertical2.x - startX2);
+                contentPos.x = startX2 + (content2width / 2) - (MeasureTextEx(menu->font, p1Name, contentFontSize, 1).x / 2);
+                contentPos.y = (menu->screen->height * 0.4) + (element_height * (i - 1) + element_height / 4) - 10;
+                if (p1Score > p2Score)
+                {
+                    DrawTextEx(menu->font, p1Name, contentPos, contentFontSize, 1, win_color);
+                }
+                else if(p1Score == p2Score){
+                    DrawTextEx(menu->font, p1Name, contentPos, contentFontSize, 1, draw_color);
+                }
+                else
+                {
+                    DrawTextEx(menu->font, p1Name, contentPos, contentFontSize, 1, GRAY);
+                }
+
+                int startX3 = (StartVertical2.x);
+                int content3width = (EndHorizontal.x - startX3);
+                contentPos.x = startX3 + (content3width / 2) - (MeasureTextEx(menu->font, p2Name, contentFontSize, 1).x / 2);
+                contentPos.y = (menu->screen->height * 0.4) + (element_height * (i - 1) + element_height / 4) - 10;
+                if (p2Score > p1Score)
+                {
+                    DrawTextEx(menu->font, p2Name, contentPos, contentFontSize, 1, win_color);
+                }
+                else if(p1Score == p2Score){
+                    DrawTextEx(menu->font, p2Name, contentPos, contentFontSize, 1, draw_color);
+                }
+                else
+                {
+                    DrawTextEx(menu->font, p2Name, contentPos, contentFontSize, 1, GRAY);
+                }
+            }
         }
     }
 }

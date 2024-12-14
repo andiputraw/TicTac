@@ -13,7 +13,7 @@
 void test_case(){
     printf("EXECUTING HISTORY TEST CASE\n");
     printf("for whatever reason, test history is not executed\n");
-    TestHistory();
+    TestHistory();  
     printf("HISTORY TEST CASE COMPLETED\n");
 }
 
@@ -26,8 +26,7 @@ int main(void)
     MainMenu mainMenu;
     ModeSelectMenu modeSelectMenu;
     LeaderboardMenu leaderBoardMenu;
-    Color skyBlue = CLITERAL(Color){102, 191, 255, 255};
-    Scene scene;
+    Scene scene = MAIN_MENU;
     Font font;
     Leaderboard leaderboard;
     GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSBOT,.botMode = EASY};
