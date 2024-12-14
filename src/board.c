@@ -13,6 +13,7 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
     b->font = font;
     b->turnCount = 1;
     b->timer = timer;
+    b->lineCount = 0;
 
     for (int i = 0; i < MAX_BOX_COUNT; i++)
     {
@@ -109,8 +110,9 @@ void UpdateBoard(Board *b)
             }
         }
     }
+    b->lineCount = b->gameState->p1.score + b->gameState->p2.score;
     if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_R)){
-        ResetBoard(b);
+        RestartBoard(b);
     }
     if(b->gameState->gameStatus == ENDED && IsKeyPressed(KEY_B)){
         BackToMainMenu(b);
@@ -161,18 +163,22 @@ void DrawBoard(Board *b)
             assert("UNREACHABLE" || box.value);
             break;
         }
-        if(__IsScoring(b,i)){
-            DrawLineEx(b->scoreLinePos.startPos, b->scoreLinePos.endPos, 8.0f,BLACK);
-         }
+        // Draw Line
+        for(int i = 0; i < b->lineCount;i++){
+
+            DrawLineEx(b->scoreLinePos[i].startPos, b->scoreLinePos[i].endPos, 8.0f,BLACK);
+        }
     }
 
     // Draw Turn
-    if(b->turn == FIRST){
-        Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),25,1).x/2,.y=(b->screen->height/1.2)};
-        DrawTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),turnPos,25,1, RED);
-    }else if(b->turn == SECOND){
-        Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name),25,1).x/2,.y=(b->screen->height/1.2)};
-        DrawTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name), turnPos,25,1,BLUE);
+    if(b->gameState->vsMode == VSPLAYER){
+        if(b->turn == FIRST){
+            Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),25,1).x/2,.y=(b->screen->height/1.2)};
+            DrawTextEx(b->font,TextFormat("%s's Turn (Circle)",b->gameState->p1.name),turnPos,25,1, RED);
+        }else if(b->turn == SECOND){
+            Vector2 turnPos = (Vector2){.x = (b->screen->width/2) - MeasureTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name),25,1).x/2,.y=(b->screen->height/1.2)};
+            DrawTextEx(b->font,TextFormat("%s's Turn (Cross)",b->gameState->p2.name), turnPos,25,1,BLUE);
+        }
     }
     //Draw Score
     if(b->mode == BOARD_5_X_5){
@@ -356,102 +362,109 @@ bool __IsScoring(Board *b, int index)
 }
 
 void SetScoreLine(Board *b, int index){
-    int row,col, startIndex, endIndex, maxCol;
+    int row,col, maxCol;
     maxCol = sqrt(b->board_len);
     __1DTo2D(index,maxCol, &row, &col);
+
     switch (b->scoreCondition)
     {
     case VERTICAL_MID:
-        startIndex = __2Dto1D(maxCol, row-1, col);
-        endIndex = __2Dto1D(maxCol, row+1, col);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row-1, col);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row+1, col);
         break;
     case VERTICAL_TOP:
-        startIndex = __2Dto1D(maxCol, row, col);
-        endIndex = __2Dto1D(maxCol, row+2, col);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row, col);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row+2, col);
         break;
     case VERTICAL_BOT:
-        startIndex = __2Dto1D(maxCol, row-2, col);
-        endIndex = __2Dto1D(maxCol, row, col);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row-2, col);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row, col);
         break;
     case HORIZONTAL_MID:
-        startIndex = __2Dto1D(maxCol, row, col-1);
-        endIndex = __2Dto1D(maxCol, row, col+1);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row, col-1);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row, col+1);
         break;
     case HORIZONTAL_LEFT:
-        startIndex = __2Dto1D(maxCol, row, col);
-        endIndex = __2Dto1D(maxCol, row, col+2);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row, col);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row, col+2);
         break;
     case HORIZONTAL_RIGHT:
-        startIndex = __2Dto1D(maxCol, row, col-2);
-        endIndex = __2Dto1D(maxCol, row, col);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row, col-2);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row, col);
         break;
     case DIAGONAL_TOP_LEFT_MID:
-        startIndex = __2Dto1D(maxCol, row-1, col-1);
-        endIndex = __2Dto1D(maxCol, row+1, col+1);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row-1, col-1);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row+1, col+1);
         break;
     case DIAGONAL_TOP_LEFT_BEGIN:
-        startIndex = __2Dto1D(maxCol, row, col);
-        endIndex = __2Dto1D(maxCol, row+2, col+2);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row, col);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row+2, col+2);
         break;
     case DIAGONAL_TOP_LEFT_END:
-        startIndex = __2Dto1D(maxCol, row-2, col-2);
-        endIndex = __2Dto1D(maxCol, row, col);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row-2, col-2);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row, col);
         break;
     case DIAGONAL_TOP_RIGHT_MID:
-        startIndex = __2Dto1D(maxCol, row-1, col+1);
-        endIndex = __2Dto1D(maxCol, row+1, col-1);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row-1, col+1);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row+1, col-1);
         break;
     case DIAGONAL_TOP_RIGHT_BEGIN:
-        startIndex = __2Dto1D(maxCol, row, col);
-        endIndex = __2Dto1D(maxCol, row+2, col-2);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row, col);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row+2, col-2);
         break;
     case DIAGONAL_TOP_RIGHT_END:
-        startIndex = __2Dto1D(maxCol, row-2, col+2);
-        endIndex = __2Dto1D(maxCol, row, col);
+        b->scoreLinePos[b->lineCount].startIndex = __2Dto1D(maxCol, row-2, col+2);
+        b->scoreLinePos[b->lineCount].endIndex = __2Dto1D(maxCol, row, col);
         break;
     default:
         break;
     }
-    // printf("start: %d end:%d\n",startIndex, endIndex);
+    // printf("start: %d end:%d\n",b->scoreLinePos[b->lineCount].startIndex, b->scoreLinePos[b->lineCount].endIndex);
     if(b->scoreCondition==VERTICAL_MID||b->scoreCondition==VERTICAL_TOP||b->scoreCondition==VERTICAL_BOT){
-        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x + b->boxes[startIndex].rec.width/2,.y= b->boxes[startIndex].rec.y};
-        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x + b->boxes[endIndex].rec.width/2,.y= b->boxes[endIndex].rec.y + b->boxes[endIndex].rec.height};
+        b->scoreLinePos[b->lineCount].startPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.x + b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.width/2,.y= b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.y};
+        b->scoreLinePos[b->lineCount].endPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.x + b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.width/2,.y= b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.y + b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.height};
     }else if(b->scoreCondition==HORIZONTAL_MID||b->scoreCondition==HORIZONTAL_LEFT||b->scoreCondition==HORIZONTAL_RIGHT){
-        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x, .y = b->boxes[startIndex].rec.y+b->boxes[startIndex].rec.height/2};
-        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x +  b->boxes[endIndex].rec.width, .y = b->boxes[endIndex].rec.y+b->boxes[endIndex].rec.height/2};
+        b->scoreLinePos[b->lineCount].startPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.x, .y = b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.y+b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.height/2};
+        b->scoreLinePos[b->lineCount].endPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.x +  b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.width, .y = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.y+b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.height/2};
     }else if(b->scoreCondition==DIAGONAL_TOP_LEFT_MID||b->scoreCondition==DIAGONAL_TOP_LEFT_BEGIN||b->scoreCondition==DIAGONAL_TOP_LEFT_END){
-        b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x, .y=b->boxes[startIndex].rec.y};
-        b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x + b->boxes[startIndex].rec.width, .y = b->boxes[endIndex].rec.y +  b->boxes[endIndex].rec.width };
+        b->scoreLinePos[b->lineCount].startPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.x, .y=b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.y};
+        b->scoreLinePos[b->lineCount].endPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.x + b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.width, .y = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.y +  b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.width };
     }else if(b->scoreCondition==DIAGONAL_TOP_RIGHT_MID||b->scoreCondition==DIAGONAL_TOP_RIGHT_BEGIN||b->scoreCondition==DIAGONAL_TOP_RIGHT_END){
-         b->scoreLinePos.startPos = (Vector2){.x = b->boxes[startIndex].rec.x+b->boxes[startIndex].rec.width, .y=b->boxes[startIndex].rec.y};
-         b->scoreLinePos.endPos = (Vector2){.x = b->boxes[endIndex].rec.x, .y = b->boxes[endIndex].rec.y + b->boxes[endIndex].rec.height };
+         b->scoreLinePos[b->lineCount].startPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.x+b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.width, .y=b->boxes[b->scoreLinePos[b->lineCount].startIndex].rec.y};
+         b->scoreLinePos[b->lineCount].endPos = (Vector2){.x = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.x, .y = b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.y + b->boxes[b->scoreLinePos[b->lineCount].endIndex].rec.height };
     }
 
 }
 
-void ResetBoard(Board *b){
+void RestartBoard(Board *b){
     for(int i = 0; i < b->board_len; i++){
          b->boxes[i].value = BOX_EMPTY;
     }
-    b->scoreLinePos.startPos = (Vector2) {0,0};
-    b->scoreLinePos.endPos = (Vector2) {0,0};
+    for(int i = 0; i <=b->lineCount; i++){
+        b->scoreLinePos[i].startPos = (Vector2) {0,0};
+        b->scoreLinePos[i].endPos = (Vector2) {0,0};
+    }
     b->turn = FIRST;
     b->gameState->gameStatus = PLAYING;
     b->turnCount = 0;
     b->gameState->p1.score = 0;
     b->gameState->p2.score = 0;
+    b->lineCount = 0;
 }
 void BackToMainMenu(Board *b){
     for(int i = 0; i < b->board_len; i++){
          b->boxes[i].value = BOX_EMPTY;
     }
-    b->scoreLinePos.startPos = (Vector2) {0,0};
-    b->scoreLinePos.endPos = (Vector2) {0,0};
+    for(int i = 0; i <=b->lineCount; i++){
+        b->scoreLinePos[i].startPos = (Vector2) {0,0};
+        b->scoreLinePos[i].endPos = (Vector2) {0,0};
+    }
     b->turn = FIRST;
     b->turnCount = 0;
     b->gameState->p1.score = 0;
     b->gameState->p2.score = 0;
     b->gameState->scene = MAIN_MENU;
+    b->lineCount = 0;
 }
 
 void DrawGameOverScene(Board *b){
@@ -504,14 +517,15 @@ void PlayVsBot(Board *b, int index){
     printf("%d\n", b->turnCount);
     if (__IsScoring(b, index))
       {
+        b->gameState->p1.score++;
         SetScoreLine(b,index);
           if(b->mode == BOARD_3_X_3){
             b->turnCount = 0;
             b->gameState->gameStatus = ENDED;
           }else if(b->mode == BOARD_5_X_5){
-            b->gameState->p1.score++;
+            // b->gameState->p1.score++;
             if(b->gameState->p1.score >= 5){
-                    b->turnCount = 0;
+                b->turnCount = 0;
                 b->gameState->gameStatus = ENDED;
             }else{
                 b->turn = SECOND;
@@ -528,6 +542,7 @@ void PlayVsBot(Board *b, int index){
         if(botIndex >= 0 && botIndex <=b->board_len){
             b->boxes[botIndex].value = BOX_X;
             if(__IsScoring(b, botIndex)){
+                b->gameState->p1.score++;
                 SetScoreLine(b,botIndex);
                 if(b->mode == BOARD_3_X_3){
                     b->turnCount = 0;
@@ -535,7 +550,7 @@ void PlayVsBot(Board *b, int index){
                 }
                 else if (b->mode == BOARD_5_X_5)
                 {
-                    b->gameState->p2.score++;
+                    // b->gameState->p2.score++;
                     if(b->gameState->p2.score >= 5){
                         b->turnCount = 0;
                         b->gameState->gameStatus = ENDED;
@@ -582,6 +597,11 @@ void PlayVsPlayer(Board *b, int index){
     {
         SetScoreLine(b,index);
         if(b->mode == BOARD_3_X_3){
+            if(b->turn == SECOND){
+                b->gameState->p1.score++;
+            }else{
+                b->gameState->p2.score++;
+            }
             b->turnCount = 0;
             b->gameState->gameStatus = ENDED;
         }else if(b->mode == BOARD_5_X_5){

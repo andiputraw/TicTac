@@ -81,9 +81,9 @@ int main(void)
             UpdateTimer(&timer);
             DrawTimer(&s, &timer);
             DrawBoard(&b);
-            if(gameState.gameStatus == ENDED){
-                DrawGameOverScene(&b);
-            }
+            // if(gameState.gameStatus == ENDED){
+            //     DrawGameOverScene(&b);
+            // }
         }
         else if(gameState.scene == MAIN_MENU)
         {

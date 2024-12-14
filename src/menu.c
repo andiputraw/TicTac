@@ -183,11 +183,6 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
         buttons[i]->rect = rec;
         buttons[i]->style.fontSize = menu_font_size;
         UpdateButton(buttons[i]);
-        // if(buttons[i]->isClicked){
-        //     *menu->scene = GAMEPLAY;
-        //     menu->gameState->gameStatus = PLAYING;
-        //     printf("%d",menu->gameState->gameStatus);
-        // }
     }
 
 
@@ -283,6 +278,8 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu) {
 }
 
 void ModeSelectMenuDraw(ModeSelectMenu *selectMenu){
+    Vector2 titlePos = (Vector2) {.x=selectMenu->screen->width/2-MeasureTextEx(selectMenu->classicModeBtn.style.font,"SELECT MODES",selectMenu->classicModeBtn.style.fontSize*2,1).x/2, .y=selectMenu->screen->height/20};
+    DrawTextEx(selectMenu->classicModeBtn.style.font,"SELECT MODES",titlePos ,selectMenu->classicModeBtn.style.fontSize*2,1, BLACK);
     DrawButton(&selectMenu->classicModeBtn);
     DrawButton(&selectMenu->extendedModeBtn);
 
