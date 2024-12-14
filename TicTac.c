@@ -5,6 +5,7 @@
 #include "player.h"
 #include "menu.h"
 #include "leaderboard.h"
+#include <string.h>
 
 // #define TEST
 
@@ -13,7 +14,7 @@
 void test_case(){
     printf("EXECUTING HISTORY TEST CASE\n");
     printf("for whatever reason, test history is not executed\n");
-    TestHistory();  
+    TestHistory();
     printf("HISTORY TEST CASE COMPLETED\n");
 }
 
@@ -31,6 +32,7 @@ int main(void)
     Leaderboard leaderboard;
     GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSBOT,.botMode = EASY};
     Timer timer;
+    History history;
 
     char p1_container[255] = {0};
     char p2_container[255] = {0};
@@ -80,9 +82,18 @@ int main(void)
             UpdateTimer(&timer);
             DrawTimer(&s, &timer);
             DrawBoard(&b);
-            if(gameState.gameStatus == ENDED){
-                DrawGameOverScene(&b);
-            }
+            // if(gameState.gameStatus == ENDED){
+            //     DrawGameOverScene(&b);
+            //     if(gameState.vsMode == VSPLAYER) {
+            //         memcpy(&history.p1, &gameState.p1, sizeof(Player));
+            //         memcpy(&history.p2, &gameState.p2, sizeof(Player));
+            //         history.game_mode = b.mode;
+            //         for(int i = 0; i < 25; i++){
+            //             history.BoardState[i] = b.boxes[i].value;
+            //         }
+            //         WriteHistory(&leaderboard, &history);
+            //     }
+            // }
         }
         else if(gameState.scene == MAIN_MENU)
         {
@@ -97,6 +108,10 @@ int main(void)
         }
 
         EndDrawing();
+
+        if(gameState.scene == EXIT_GAME) {
+            break;
+        }
     }
     UnloadFont(font);
     CloseWindow();

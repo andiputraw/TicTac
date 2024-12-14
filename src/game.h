@@ -23,7 +23,8 @@ typedef enum Scene
   MAIN_MENU = 0,
   SELECT_MODES_MENU,
   GAMEPLAY,
-  LEADERBORAD_MENU
+  LEADERBORAD_MENU,
+  EXIT_GAME,
 } Scene;
 
 typedef enum

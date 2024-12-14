@@ -75,6 +75,9 @@ bool ReadHistory(Leaderboard *l, History *h, int len, int offset);
 // Mengupdate elo player dengan nama yang sama, jika nama tidak ditemukan, akan dibuat yang baru.
 void WritePlayerElo(Leaderboard *l, PlayerElo *p);
 
+// ambil player elo berdasarkan nama
+bool GetPlayerElo(Leaderboard *l, PlayerElo *p, char * name);
+
 // Ambil panjang seluruh history
 int GetHistoryLen(Leaderboard *l);
 

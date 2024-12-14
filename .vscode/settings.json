@@ -1,6 +1,7 @@
 {
     "C_Cpp.errorSquiggles": "disabled",
     "files.associations": {
-        "leaderboard.h": "c"
+        "leaderboard.h": "c",
+        "stdlib.h": "c"
     }
 }

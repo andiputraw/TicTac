@@ -26,6 +26,8 @@ typedef struct {
 } Box;
 
 typedef struct{
+    int startIndex;
+    int endIndex;
     Vector2 startPos;
     Vector2 endPos;
 } ScoreLinePos;
@@ -37,8 +39,9 @@ typedef struct {
     Screen *screen;
     Turn turn;
     GameState *gameState;
-    ScoreLinePos scoreLinePos;
+    ScoreLinePos scoreLinePos[10];
     ScoreCondition scoreCondition;
+    int lineCount;
     Font font;
     int turnCount;
     Timer *timer;
@@ -49,9 +52,11 @@ typedef struct {
 void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font);
 void DrawBoard(Board *b);
 void UpdateBoard(Board *b);
-void ResetBoard(Board*b);
+void RestartBoard(Board*b);
 void CreateBox(Box *box);
+
 void SetScoreLine(Board *b,int index);
+void UpdateLine(Board*b);
 void DrawGameOverScene(Board *b);
 void PlayVsBot(Board *b, int index);
 int CalculateBotIndex(Board *b, int index);

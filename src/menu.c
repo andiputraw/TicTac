@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "board.h"
 #include <string.h>
+#include <math.h>
 
 Rectangle __CalculateButtonRect(Screen *screen, int index, int btnWidth, int btnHeight, int btnMarginTop)
 {
@@ -91,6 +92,8 @@ void UpdateMainMenu(MainMenu *mainMenu)
     if (mainMenu->historyBtn.isClicked)
     {
         *mainMenu->scene = LEADERBORAD_MENU;
+    }if(mainMenu->exitBtn.isClicked) {
+        *mainMenu->scene = EXIT_GAME;
     }
 }
 
@@ -125,7 +128,7 @@ Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_he
     };
 }
 
-void CreateModeSelectMenu(ModeSelectMenu *menu, GameState *gameState, Screen *screen, Scene *scene, char input_p1[255], char input_p2[255], Font font)
+void CreateModeSelectMenu (ModeSelectMenu *menu, GameState *gameState, Screen *screen, Scene *scene, Board *b, char input_p1[255], char input_p2[255], Font font)
 {
     int btn_width = screen->width * 0.15;
     int btn_height = screen->height * 0.1;
@@ -185,9 +188,8 @@ void CreateModeSelectMenu(ModeSelectMenu *menu, GameState *gameState, Screen *sc
         .mediumBotBtn = menu->mediumBotBtn,
         .hardBotBtn = menu->hardBotBtn,
         .scene = scene,
-        .gameState = gameState};
-        .gameState= gameState,
-        .b = b
+        .b = b,
+        .gameState = gameState,
     };
 
 }
@@ -207,11 +209,6 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu)
         buttons[i]->rect = rec;
         buttons[i]->style.fontSize = menu_font_size;
         UpdateButton(buttons[i]);
-        // if(buttons[i]->isClicked){
-        //     *menu->scene = GAMEPLAY;
-        //     menu->gameState->gameStatus = PLAYING;
-        //     printf("%d",menu->gameState->gameStatus);
-        // }
     }
 
     int input_width = menu->screen->width * 0.3;
@@ -320,8 +317,9 @@ void UpdateModeSelectMenu(ModeSelectMenu *menu)
     
 }
 
-void ModeSelectMenuDraw(ModeSelectMenu *selectMenu)
-{
+void ModeSelectMenuDraw(ModeSelectMenu *selectMenu){
+    Vector2 titlePos = (Vector2) {.x=selectMenu->screen->width/2-MeasureTextEx(selectMenu->classicModeBtn.style.font,"SELECT MODES",selectMenu->classicModeBtn.style.fontSize*2,1).x/2, .y=selectMenu->screen->height/20};
+    DrawTextEx(selectMenu->classicModeBtn.style.font,"SELECT MODES",titlePos ,selectMenu->classicModeBtn.style.fontSize*2,1, BLACK);
     DrawButton(&selectMenu->classicModeBtn);
     DrawButton(&selectMenu->extendedModeBtn);
 
@@ -385,6 +383,8 @@ void CreateLeaderboardMenu(LeaderboardMenu *menu, GameState *gameState, Screen *
     menu->menuScene = LeaderboardMenuLeaderboard;
     menu->isLeaderboardUpdated = false;
     menu->page = 0;
+    memset(menu->Top5Leaderboard, 0, sizeof(menu->Top5Leaderboard));
+    memset(menu->CurrentlyShowedHistory, 0, sizeof(menu->CurrentlyShowedHistory));
     CreateButton(&menu->nextBtn, NO_RECT, "History", BetterMenuButtonStyle(font, *screen));
     CreateButton(&menu->backBtn, NO_RECT, "Back", BetterMenuButtonStyle(font, *screen));
     CreateButton(&menu->nextHistory, NO_RECT, ">", BetterMenuButtonStyle(font, *screen));
@@ -451,7 +451,7 @@ void UpdateLeaderboardMenu(LeaderboardMenu *menu)
 
         int history_len = GetHistoryLen(menu->leaderboard);
         int offset = 0;
-        menu->max_page = ceilf(history_len / 5);
+        menu->max_page = ceil(history_len / 5);
 
         if (history_len > 5)
         {
@@ -470,9 +470,10 @@ void UpdateLeaderboardMenu(LeaderboardMenu *menu)
 
     if (menu->backBtn.isClicked)
     {
-        *menu->scene = MAIN_MENU;
+        menu->gameState->scene = MAIN_MENU;
         menu->isLeaderboardUpdated = false;
     }
+
     if (menu->nextHistory.isClicked)
     {
         menu->isLeaderboardUpdated = false;

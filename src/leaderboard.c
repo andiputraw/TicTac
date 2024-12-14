@@ -253,7 +253,7 @@ void WritePlayerElo(Leaderboard *l, PlayerElo *p) {
     int buffLen;
     int playerCursorLoc;
     buffLen = PlayerEloToBuffer(buff, *p);
-    // player cursor loc mengembalikan lokasi dimana cursor menunjukan ke buffer yang menandakan panjang dari string
+    // player cursor loc mengembalikan lokasi dimana cursor menunjukan ke buffer yang menandakan panjang dari nama
     playerCursorLoc = __PlayerLocationCursor(l, p->name, strlen(p->name));
 
     // Tulis diujung file jike nama player tidak ketemu
@@ -277,6 +277,16 @@ void WritePlayerElo(Leaderboard *l, PlayerElo *p) {
     fflush(l->leaderboard);
 }
 
+bool GetPlayerElo(Leaderboard *l, PlayerElo *p,  char *name){
+    int cursorLoc = __PlayerLocationCursor(l, name, strlen(name));
+    if(cursorLoc == - 1) {
+        return false;
+    }
+
+    BufferToPlayerElo(&l->leaderboard_buffer[cursorLoc], p);
+    return true;
+}
+
 bool ReadTop5Player(Leaderboard *l, PlayerElo *p){
     int i = 0, j = 0,k = 0;
 
@@ -286,7 +296,6 @@ bool ReadTop5Player(Leaderboard *l, PlayerElo *p){
     int currElo = 0;
     int top5Offset[5] = {0,0,0,0,0};
     int top5Score[5] = {0,0,0,0,0};
-    int top5Len = 0;
     for(i = 0; l->leaderboard_buffer[currOffset] != 0; currOffset += currBufLen ) {
         currBufLen = l->leaderboard_buffer[currOffset] + 1;
         memcpy(&currElo, &l->leaderboard_buffer[currOffset + currBufLen - 4], sizeof(int));
