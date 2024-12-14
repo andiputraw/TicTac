@@ -11,7 +11,8 @@
 
 #ifdef TEST
 
-void test_case(){
+void test_case()
+{
     printf("EXECUTING HISTORY TEST CASE\n");
     printf("for whatever reason, test history is not executed\n");
     TestHistory();
@@ -27,22 +28,25 @@ int main(void)
     MainMenu mainMenu;
     ModeSelectMenu modeSelectMenu;
     LeaderboardMenu leaderBoardMenu;
-    Scene scene = MAIN_MENU;
+    Scene scene;
     Font font;
     Leaderboard leaderboard;
-    GameState gameState = (GameState){.gameStatus=ENDED, .p1={.name = {0}, .score = 0}, .p2={.name = {0}, .score = 0}, .scene = scene, .vsMode = VSBOT,.botMode = EASY};
+    GameState gameState;
     Timer timer;
     History history;
 
     char p1_container[255] = {0};
     char p2_container[255] = {0};
 
-    #ifdef TEST
+#ifdef TEST
     printf("EXECUTING TEST CASE...\n");
     test_case();
     return 0;
-    #endif // TEST
+#endif // TEST
 
+    gameState = (GameState){.gameStatus = ENDED, .p1 = {.name = {0}, .score = 0}, .p2 = {.name = {0}, .score = 0}, .scene = scene, .vsMode = VSBOT, .botMode = EASY};
+    b.turn = FIRST;
+    gameState.scene = MAIN_MENU;
     // pre window configuration
     UpdateScreen(&s, 800, 450);
     OpenLeaderboard(&leaderboard);
@@ -58,19 +62,18 @@ int main(void)
 
     // menu initializing
     CreateMainMenu(&mainMenu, &s, &gameState.scene, font);
-    CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene,&b, p1_container, p2_container, font);
+    CreateModeSelectMenu(&modeSelectMenu, &gameState, &s, &scene, &b, p1_container, p2_container, font);
     CreateLeaderboardMenu(&leaderBoardMenu, &gameState, &s, &scene, &leaderboard, font);
-    CreateTimer(&timer,&gameState, font);
+    CreateTimer(&timer, &gameState, font);
     // printf("HELLO WORLD");
 
     SetTargetFPS(24);
 
-    CreateBoard(&b,&gameState, BOARD_3_X_3, &s,&timer, font, &leaderboard);
-    b.turn = FIRST;
-    gameState.scene = MAIN_MENU;
+    CreateBoard(&b, &gameState, BOARD_3_X_3, &s, &timer, font, &leaderboard);
+
+    
     while (!WindowShouldClose())
     {
-
 
         UpdateScreen(&s, GetScreenWidth(), GetScreenHeight());
 
@@ -95,21 +98,26 @@ int main(void)
             //     }
             // }
         }
-        else if(gameState.scene == MAIN_MENU)
+        else if (gameState.scene == MAIN_MENU)
         {
             UpdateMainMenu(&mainMenu);
             MainMenuDraw(mainMenu);
-        }else if(gameState.scene == SELECT_MODES_MENU){
+        }
+        else if (gameState.scene == SELECT_MODES_MENU)
+        {
             UpdateModeSelectMenu(&modeSelectMenu);
             ModeSelectMenuDraw(&modeSelectMenu);
-        }else if(gameState.scene == LEADERBORAD_MENU){
+        }
+        else if (gameState.scene == LEADERBORAD_MENU)
+        {
             UpdateLeaderboardMenu(&leaderBoardMenu);
             DrawLeaderboardMenu(&leaderBoardMenu);
         }
 
         EndDrawing();
 
-        if(gameState.scene == EXIT_GAME) {
+        if (gameState.scene == EXIT_GAME)
+        {
             break;
         }
     }

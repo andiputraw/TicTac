@@ -22,12 +22,12 @@ Rectangle __CalculateButtonRect(Screen *screen, int index, int btnWidth, int btn
     };
 }
 
-ButtonStyle MainMenuButtonStyle(Font font, int fontSize)
+ButtonStyle __MainMenuButtonStyle(Font font, int fontSize)
 {
     return CreateButtonStyle(GRAY, WHITE, font, fontSize);
 }
 
-InputTextStyle MainMenuInputTextStyle(Font font, int fontSize)
+InputTextStyle __MainMenuInputTextStyle(Font font, int fontSize)
 {
     return CreateInputTextStyle(GRAY, WHITE, font, fontSize);
 }
@@ -47,7 +47,7 @@ void CreateMainMenu(MainMenu *mainMenu, Screen *screen, Scene *scene, Font font)
 
     for (int i = 0; i < 3; i++)
     {
-        CreateButton(buttons[i], __CalculateButtonRect(screen, i, btn_width, btn_height, btn_margin_top), playText[i], MainMenuButtonStyle(font, menu_font_size));
+        CreateButton(buttons[i], __CalculateButtonRect(screen, i, btn_width, btn_height, btn_margin_top), playText[i], __MainMenuButtonStyle(font, menu_font_size));
     }
     *mainMenu = (MainMenu){.playBtn = *buttons[0], .historyBtn = *buttons[1], .exitBtn = *buttons[2], .screen = screen, .scene = scene};
 }
@@ -145,16 +145,16 @@ void CreateModeSelectMenu (ModeSelectMenu *menu, GameState *gameState, Screen *s
     for (int i = 0; i < 2; i++)
     {
         rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 3, 0.8);
-        CreateButton(buttons[i], rec, btn_text[i], MainMenuButtonStyle(font, menu_font_size));
+        CreateButton(buttons[i], rec, btn_text[i], __MainMenuButtonStyle(font, menu_font_size));
     }
 
     int input_width = screen->width * 0.4;
     int input_height = screen->height * 0.1;
     int input_margin_right = input_width * 0.1;
-    InputTextStyle style = MainMenuInputTextStyle(font, menu_font_size);
+    InputTextStyle style = __MainMenuInputTextStyle(font, menu_font_size);
     SetInputTextStylePlaceholder(&style, "Enter your name..");
     CreateInputText(&menu->InputP1Name, __MeasureRectangleModeSelectMenu(screen, 0, input_height, input_width, input_margin_right, 2, 0.2), input_p1, style);
-    CreateInputText(&menu->InputP2Name, __MeasureRectangleModeSelectMenu(screen, 1, input_height, input_width, input_margin_right, 2, 0.2), input_p2, MainMenuInputTextStyle(font, menu_font_size));
+    CreateInputText(&menu->InputP2Name, __MeasureRectangleModeSelectMenu(screen, 1, input_height, input_width, input_margin_right, 2, 0.2), input_p2, __MainMenuInputTextStyle(font, menu_font_size));
 
     Button *vs_btn[2] = {&menu->vsPlayerBtn, &menu->vsBotBtn};
     char *vs_btn_text[2] = {"VS PLAYER", "VS BOT"};
@@ -169,7 +169,7 @@ void CreateModeSelectMenu (ModeSelectMenu *menu, GameState *gameState, Screen *s
     for (int i = 0; i < 2; i++)
     {
         rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 2, 0.4);
-        CreateButton(vs_btn[i], rec, vs_btn_text[i], MainMenuButtonStyle(font, menu_font_size));
+        CreateButton(vs_btn[i], rec, vs_btn_text[i], __MainMenuButtonStyle(font, menu_font_size));
     }
 
     Button *diff_btn[3] = {&menu->easyBotBtn, &menu->mediumBotBtn, &menu->hardBotBtn};
@@ -178,7 +178,7 @@ void CreateModeSelectMenu (ModeSelectMenu *menu, GameState *gameState, Screen *s
     for (int i = 0; i < 3; i++)
     {
         rec = __MeasureRectangleModeSelectMenu(screen, i, btn_height, btn_width, btn_margin_right, 3, 0.6);
-        CreateButton(diff_btn[i], rec, diff_btn_text[i], MainMenuButtonStyle(font, menu_font_size));
+        CreateButton(diff_btn[i], rec, diff_btn_text[i], __MainMenuButtonStyle(font, menu_font_size));
     }
 
     *menu = (ModeSelectMenu){
@@ -374,7 +374,7 @@ int __ResponsiveFontSize(Screen screen, int min, int mid, int max)
     return fontSize;
 }
 
-ButtonStyle BetterMenuButtonStyle(Font font, Screen screen)
+ButtonStyle __BetterMenuButtonStyle(Font font, Screen screen)
 {
     int fontSize = __CalculateMenuButtonFontSize(screen);
     return CreateButtonStyle(WHITE, BLACK, font, fontSize);
@@ -392,14 +392,16 @@ void CreateLeaderboardMenu(LeaderboardMenu *menu, GameState *gameState, Screen *
     menu->page = 0;
     memset(menu->Top5Leaderboard, 0, sizeof(menu->Top5Leaderboard));
     memset(menu->CurrentlyShowedHistory, 0, sizeof(menu->CurrentlyShowedHistory));
-    CreateButton(&menu->nextBtn, NO_RECT, "History", BetterMenuButtonStyle(font, *screen));
-    CreateButton(&menu->backBtn, NO_RECT, "Back", BetterMenuButtonStyle(font, *screen));
-    CreateButton(&menu->nextHistory, NO_RECT, ">", BetterMenuButtonStyle(font, *screen));
-    CreateButton(&menu->prevHistory, NO_RECT, "<", BetterMenuButtonStyle(font, *screen));
+    CreateButton(&menu->nextBtn, NO_RECT, "History", __BetterMenuButtonStyle(font, *screen));
+    CreateButton(&menu->backBtn, NO_RECT, "Back", __BetterMenuButtonStyle(font, *screen));
+    CreateButton(&menu->nextHistory, NO_RECT, ">", __BetterMenuButtonStyle(font, *screen));
+    CreateButton(&menu->prevHistory, NO_RECT, "<", __BetterMenuButtonStyle(font, *screen));
 }
 
 void UpdateLeaderboardMenu(LeaderboardMenu *menu)
 {
+    int history_len;
+    int offset;
 
     int width = menu->screen->width * 0.2 > 240 ? 240 : menu->screen->width * 0.2;
     int height = menu->screen->height * 0.1 > 60 ? 60 : menu->screen->height * 0.1;
@@ -456,8 +458,8 @@ void UpdateLeaderboardMenu(LeaderboardMenu *menu)
         RefreshLeaderboardBuffer(menu->leaderboard);
         ReadTop5Player(menu->leaderboard, &menu->Top5Leaderboard[0]);
 
-        int history_len = GetHistoryLen(menu->leaderboard);
-        int offset = 0;
+        history_len = GetHistoryLen(menu->leaderboard);
+        offset = 0;
         menu->max_page = ceil(history_len / 5);
 
         if (history_len > 5)
@@ -549,6 +551,9 @@ void DrawLeaderboardMenu(LeaderboardMenu *menu)
     float element_height = menu->screen->height * 0.1;
     Vector2 contentPos;
     char itoaBuff[8] = {0};
+    Color win_color = GetColor(0x9EDF9CFF);
+    Color draw_color = GetColor(0xFFE31AFF);
+    int i;
 
     DrawButton(&menu->nextBtn);
     DrawButton(&menu->backBtn);
@@ -655,8 +660,7 @@ void DrawLeaderboardMenu(LeaderboardMenu *menu)
                     }
                 }
                 char gamemode[10] = "Classic";
-                Color win_color = GetColor(0x9EDF9CFF);
-                Color draw_color = GetColor(0xFFE31AFF);
+             
                 if (menu->CurrentlyShowedHistory[index].game_mode == BOARD_3_X_3)
                 {
                     strcpy(gamemode, "Classic");

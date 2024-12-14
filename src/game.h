@@ -11,8 +11,8 @@ typedef struct
   int height;
 } Screen;
 
-
-typedef enum{
+typedef enum
+{
   FIRST,
   SECOND,
   NEITHER
@@ -34,21 +34,24 @@ typedef enum
   ENDED,
 } GameStatus;
 
-typedef enum{
+typedef enum
+{
   VSBOT = 0,
   VSPLAYER
 } VsMode;
 // WARNING:
 // Jangan update ini sembarangan. ada kemungkinan merusak fitur berikut
 // __CalculateEloWin
-typedef enum{
+typedef enum
+{
   EASY,
   MEDIUM,
   HARD,
   NOTBOT,
 } BotMode;
 
-typedef enum{
+typedef enum
+{
   HORIZONTAL_MID,
   HORIZONTAL_LEFT,
   HORIZONTAL_RIGHT,
@@ -63,7 +66,8 @@ typedef enum{
   DIAGONAL_TOP_RIGHT_END
 } ScoreCondition;
 
-typedef struct{
+typedef struct
+{
   Scene scene;
   GameStatus gameStatus;
   VsMode vsMode;
@@ -72,23 +76,22 @@ typedef struct{
   Player p2;
 } GameState;
 
-typedef struct{
-    int timeAmount;
-    bool isRunning;
-    float elapsedTime;
-    int seconds;
-    int minutes;
-    Font font;
-    GameState *gameState;
+typedef struct
+{
+  int timeAmount;
+  bool isRunning;
+  float elapsedTime;
+  int seconds;
+  int minutes;
+  Font font;
+  GameState *gameState;
 } Timer;
-
 
 void UpdateScreen(Screen *s, int w, int h);
 
 // Sementara
-void CreateTimer(Timer *timer,GameState *gameState, Font font);
+void CreateTimer(Timer *timer, GameState *gameState, Font font);
 void UpdateTimer(Timer *timer);
 void DrawTimer(Screen *screen, Timer *timer);
-
 
 #endif // _SCREEN_H

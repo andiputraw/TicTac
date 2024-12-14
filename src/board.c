@@ -37,21 +37,17 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
 
 void UpdateBoard(Board *b)
 {
-    int w = b->screen->width;
-    int h = b->screen->height;
-    float s;
-    float center_x = (w / 2) - (s / 2);
-    float center_y = (h / 2) - (s / 2);
-    float left_upper_square_x;
-    float left_upper_square_y;
-    int offset;
+    int w, h, offset, i , j, index;
+    float s, center_x, center_y, left_upper_square_x, left_upper_square_y;
     Rectangle rec;
     Vector2 mouse;
-    int i = 0, j = 0;
-    bool isThinking;
-    int index;
 
-
+    w = b->screen->width;
+    h = b->screen->height;
+    center_x = (w / 2) - (s / 2);
+    center_y = (h / 2) - (s / 2);
+    i = 0; 
+    j = 0;
     switch (b->mode)
     {
     case BOARD_3_X_3:

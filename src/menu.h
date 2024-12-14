@@ -68,8 +68,11 @@ void CreateLeaderboardMenu(LeaderboardMenu *menu, GameState *gameState, Screen *
 void UpdateLeaderboardMenu(LeaderboardMenu *menu);
 void DrawLeaderboardMenu(LeaderboardMenu *menu);
 
-void CrateHistoryMenu();
-void UpdateHistoryMenu();
-void DrawHistoryMenu();
+ButtonStyle __BetterMenuButtonStyle(Font font, Screen screen);
+int __ResponsiveFontSize(Screen screen, int min, int mid, int max);
+int __CalculateMenuButtonFontSize(Screen screen);
+Rectangle __MeasureRectangleModeSelectMenu(Screen *screen, int index, int btn_height, int btn_width, int margin_r, int len, float h_loc);
+InputTextStyle __MainMenuInputTextStyle(Font font, int fontSize);
+ButtonStyle __MainMenuButtonStyle(Font font, int fontSize);
 
 #endif //! MENU_H

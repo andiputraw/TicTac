@@ -86,14 +86,20 @@ int GetHistoryLen(Leaderboard *l);
 bool ReadTop5Player(Leaderboard *l, PlayerElo *p);
 
 // konversi dari PlayerElo ke bytes.
-int PlayerEloToBuffer(char *buffer, PlayerElo h);
+int __PlayerEloToBuffer(char *buffer, PlayerElo h);
 // konversi dari bytes ke Player Elo.
-int BufferToPlayerElo(char *buffer, PlayerElo *h);
+int __BufferToPlayerElo(char *buffer, PlayerElo *h);
 
 // konversi dari History ke bytes.
-int HistoryToBuffer(char *buffer, History h);
+int __HistoryToBuffer(char *buffer, History h);
 // konversi dari bytes ke History.
-int BufferToHistory(char *buffer, History *h);
+int __BufferToHistory(char *buffer, History *h);
+
+
+int __PlayerLocationCursor(Leaderboard *l, char *name, int len);
+void __PrintPlayerElo(PlayerElo e);
+void __PrintHistory(History h);
+void __PrintBuffer(char *buffer, int buffer_len);
 
 void TestHistory();
 

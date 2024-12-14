@@ -35,7 +35,7 @@ void __PrintPlayerElo(PlayerElo e) {
     printf("PLAYER ELO: %d\n", e.elo);
 } 
 
-int HistoryToBuffer(char *buffer, History h){
+int __HistoryToBuffer(char *buffer, History h){
     int i, p1_len, p2_len = 0;
     int j = 0;
     i = 0;
@@ -69,7 +69,7 @@ int HistoryToBuffer(char *buffer, History h){
     return i;
 }
 
-int BufferToHistory(char *buffer, History *h){
+int __BufferToHistory(char *buffer, History *h){
     int i = 0, p1_len = 0, p2_len = 0;
     int j = 0;
     // parsing buffer dan taruh ke game_mode dan skor masing masing
@@ -189,7 +189,7 @@ void WriteHistory(Leaderboard *l, History *h){
         return;
     }
 
-    count = HistoryToBuffer(&alloc, *h);
+    count = __HistoryToBuffer(&alloc, *h);
     fwrite(&count, sizeof(char), 1, l->history);
     fwrite(alloc, sizeof(char), count, l->history);
     fflush(l->history);
@@ -215,7 +215,7 @@ bool ReadHistory(Leaderboard *l, History *h, int len, int offset){
     for(i = 0; i < len; i++){
         // skip panjang buffer history
         currOffset++;
-        totalRead = BufferToHistory(&l->history_buffer[currOffset], &h[i]);
+        totalRead = __BufferToHistory(&l->history_buffer[currOffset], &h[i]);
         currOffset += totalRead;
     }
     return true;
@@ -252,7 +252,7 @@ void WritePlayerElo(Leaderboard *l, PlayerElo *p) {
     char buff[1024];
     int buffLen;
     int playerCursorLoc;
-    buffLen = PlayerEloToBuffer(buff, *p);
+    buffLen = __PlayerEloToBuffer(buff, *p);
     // player cursor loc mengembalikan lokasi dimana cursor menunjukan ke buffer yang menandakan panjang dari nama
     playerCursorLoc = __PlayerLocationCursor(l, p->name, strlen(p->name));
 
@@ -283,7 +283,7 @@ bool GetPlayerElo(Leaderboard *l, PlayerElo *p,  char *name){
         return false;
     }
 
-    BufferToPlayerElo(&l->leaderboard_buffer[cursorLoc], p);
+    __BufferToPlayerElo(&l->leaderboard_buffer[cursorLoc], p);
     return true;
 }
 
@@ -314,13 +314,13 @@ bool ReadTop5Player(Leaderboard *l, PlayerElo *p){
     }
     
     for( i = 0; i < 5 && top5Offset[i] != 0; i++) {
-        BufferToPlayerElo(&l->leaderboard_buffer[top5Offset[i]], &p[i]);
+        __BufferToPlayerElo(&l->leaderboard_buffer[top5Offset[i]], &p[i]);
     }
 
     return true;
 }
 
-int PlayerEloToBuffer(char *buffer, PlayerElo h){
+int __PlayerEloToBuffer(char *buffer, PlayerElo h){
     int i = 0, nameLen = 0;
     int j = 0;
     i = 0;
@@ -336,7 +336,7 @@ int PlayerEloToBuffer(char *buffer, PlayerElo h){
     i += sizeof(int);
     return i;  
 }
-int BufferToPlayerElo(char *buffer, PlayerElo *h){
+int __BufferToPlayerElo(char *buffer, PlayerElo *h){
     int i = 0, nameLen = 0;
     int j = 0;
     i = 0;
@@ -376,10 +376,10 @@ void TestHistory(){
     memcpy(h.BoardState, boxes, sizeof(int) * 25);
 
     char buffer[255];
-    int len = HistoryToBuffer(buffer, h);
+    int len = __HistoryToBuffer(buffer, h);
     __PrintBuffer(buffer, len);
     History parsed_h;
-    BufferToHistory(buffer,&parsed_h);
+    __BufferToHistory(buffer,&parsed_h);
     __PrintHistory(parsed_h);
     
     History historyFromFile[2]; 
@@ -409,10 +409,10 @@ void TestHistory(){
         .elo = 9999,
     };
     char buffer2[255];
-    len = PlayerEloToBuffer(buffer2, elo);
+    len = __PlayerEloToBuffer(buffer2, elo);
     __PrintBuffer(buffer2, len);
     PlayerElo foo;
-    BufferToPlayerElo(buffer2, &foo);
+    __BufferToPlayerElo(buffer2, &foo);
     __PrintPlayerElo(foo);
     
     printf("\nTEST PLAYER ELO WRITE TO FILE\n");

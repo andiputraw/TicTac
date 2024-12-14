@@ -73,5 +73,7 @@ void __1DTo2D(int index, int maxCol, int *row, int *col);
 bool __IsScoring(Board *b, int index);
 bool __IndexIsValid(int len, int index);
 void __RecordResultToFile(Board *b);
+int __CalculateEloWin( int currElo, int botDiff);
+int __CalculateEloLose( int currElo, int botDiff);
 
 #endif // _BOARD_H
