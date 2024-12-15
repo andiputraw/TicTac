@@ -1,6 +1,6 @@
 @echo off
 
-set compileMode=ziggy
+set compileMode=easy
 
 if "%compileMode%"=="easy" (
     set CC=.\bin\tcc\tcc
