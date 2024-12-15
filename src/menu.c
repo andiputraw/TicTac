@@ -675,6 +675,15 @@ void DrawLeaderboardMenu(LeaderboardMenu *menu)
             {
                 // loop dari belakang. tidak perlu i - 1 karena i sudah loop dari 1 - 5
                 index = (5 - i);
+                if (menu->len < 5)
+                {
+                    index = (menu->len - i);
+                    if (i > menu->len + 1)
+                    {
+                        continue;
+                    }
+                }
+
                 p1Name = menu->CurrentlyShowedHistory[index].p1.name;
                 p2Name = menu->CurrentlyShowedHistory[index].p2.name;
                 p1Score = menu->CurrentlyShowedHistory[index].p1.score;
@@ -686,14 +695,7 @@ void DrawLeaderboardMenu(LeaderboardMenu *menu)
                 startX3 = (StartVertical2.x);
                 content3width = (EndHorizontal.x - startX3);
 
-                if (menu->len < 5)
-                {
-                    index = (menu->len - i);
-                    if (i > menu->len + 1)
-                    {
-                        continue;
-                    }
-                }
+           
 
                 if (menu->CurrentlyShowedHistory[index].game_mode == BOARD_3_X_3)
                 {
