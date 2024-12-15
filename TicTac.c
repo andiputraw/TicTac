@@ -51,8 +51,8 @@ int main(void)
     UpdateScreen(&s, 800, 450);
     OpenLeaderboard(&leaderboard);
 
-    // SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST);
-    SetConfigFlags(FLAG_WINDOW_RESIZABLE);
+    SetConfigFlags(FLAG_WINDOW_RESIZABLE | FLAG_WINDOW_TOPMOST);
+    // SetConfigFlags(FLAG_WINDOW_RESIZABLE);
 
     InitWindow(s.width, s.height, "Tic Tac Toe - TCC");
 

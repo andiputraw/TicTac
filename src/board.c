@@ -15,7 +15,8 @@
 #include <string.h>
 
 void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *timer, Font font, Leaderboard *leaderboard)
-{
+{   
+    int i;
     b->mode = mode;
     b->screen = s;
     b->gameState = gameState;
@@ -26,7 +27,7 @@ void CreateBoard(Board *b, GameState *gameState, int mode, Screen *s,Timer *time
     b->leaderboard = leaderboard;
     b->isResultWritten = false;
 
-    for (int i = 0; i < MAX_BOX_COUNT; i++)
+    for (i = 0; i < MAX_BOX_COUNT; i++)
     {
         CreateBox(&b->boxes[i]);
     }
@@ -149,12 +150,13 @@ int __CalculateEloLose( int currElo, int botDiff) {
 void __RecordResultToFile(Board *b) {
     History history;
     PlayerElo playerElo;
+    int i;
     if(!b->isResultWritten){
         if(b->gameState->vsMode == VSPLAYER){
             memcpy(&history.p1, &b->gameState->p1, sizeof(Player));
             memcpy(&history.p2, &b->gameState->p2, sizeof(Player));
             history.game_mode = b->mode;
-            for(int i = 0; i < 25; i++){
+            for(i = 0; i < 25; i++){
                 history.BoardState[i] = b->boxes[i].value;
             }
             WriteHistory(b->leaderboard, &history);
@@ -535,6 +537,7 @@ void BackToMainMenu(Board *b){
     b->gameState->p2.score = 0;
     b->gameState->scene = MAIN_MENU;
     b->lineCount = 0;
+    b->isResultWritten = false;
 }
 
 void DrawGameOverScene(Board *b){
